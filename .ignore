@@ -1,2 +1,3 @@
 /app/src/main/jni/native/*
 *.rawpro
+*.txt
