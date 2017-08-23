@@ -34,7 +34,7 @@ JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_blur
 /*
  * Class:     tech_startech_picktime_NDKUtils
  * Method:    desColor
- * Signature: ([III)[I
+ * Signature: ([I[III)[I
  */
 JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_desColor
   (JNIEnv *, jclass, jintArray, jintArray, jint, jint);
