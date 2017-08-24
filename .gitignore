@@ -1,5 +1,5 @@
 /app/src/main/jni/native/*
 *.rawpro
-*.txt
+*.rawproto
 *.bin
 *.lock
