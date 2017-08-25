@@ -96,7 +96,7 @@ extern "C"
             // boxFilter(temp, temp, -1, Size(85, 85));
             // 均值滤波
             //blur(temp, temp, Size(85, 85));
-            // 使用高斯模糊滤波
+            // 使用opencv的高斯模糊滤波
             GaussianBlur(mat_image_src, mat_image_src, Size(45, 13), 0, 0);
             // 将opencv图片转化成c图片数据，RGBA转化成灰度图4通道颜色数据
             cvtColor(mat_image_src, mat_image_src, CV_RGBA2GRAY, 4);
