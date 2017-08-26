@@ -2,48 +2,39 @@ package tech.startech.picktime;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Handler;
-import android.os.Message;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apkfuns.logutils.LogUtils;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
+
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static android.R.attr.src;
+import static org.opencv.core.CvType.CV_32FC1;
+
 
 public class BrowseImageActivity extends BaseActivity {
 
     static {
         //System.loadLibrary("OpenCV");                         //导入动态链接库
-        //System.loadLibrary("opencv_java3");
+        System.loadLibrary("opencv_java3");
     }
     private Bitmap bitmapOrigin;                              //维护一个存储原图Bitmap的变量
     private static final int LOAD_SOURCE_IMAGE_FINISHED = 1;  //消息类型 原图加载完成
@@ -188,8 +179,24 @@ public class BrowseImageActivity extends BaseActivity {
                             Bitmap resultBitmap = Bitmap.createBitmap(resultPixels,w,h, Bitmap.Config.RGB_565);
                             browseImage.setImageBitmap(blurBitmap);*/
 
-                            NativeBlurProcess nativeBlurProcess = new NativeBlurProcess();
-                            browseImage.setImageBitmap(nativeBlurProcess.blur(bitmapOrigin, 20,w,h));
+                            //NativeBlurProcess nativeBlurProcess = new NativeBlurProcess();
+                            //browseImage.setImageBitmap(nativeBlurProcess.blur(bitmapOrigin, 20,w,h));
+
+                            //调用opencv的java api
+                            /*Mat OriginMat = new Mat(h,w, CvType.CV_8UC4);
+                            Mat grayMat = new Mat();
+                            Mat cannyEdgesMat = new Mat();
+                            Utils.bitmapToMat(bitmapOrigin,OriginMat);
+                            //转化为灰度图
+                            Imgproc.cvtColor(OriginMat, grayMat, Imgproc.COLOR_BGR2GRAY);
+                            Imgproc.Canny(grayMat,cannyEdgesMat,50,300);
+                            Bitmap result = Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);
+                            Utils.matToBitmap(cannyEdgesMat,result);
+                            browseImage.setImageBitmap(result);*/
+
+                            //利用jni调用opencv的 C++ api
+                            NDKUtils ndk = new NDKUtils();
+
                             //修改状态
                             currentStatus = 1;
                         }

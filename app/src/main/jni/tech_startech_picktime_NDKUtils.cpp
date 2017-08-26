@@ -6,6 +6,8 @@
 #include <opencv2/opencv.hpp>
 #include <android/log.h>
 
+#include
+
 // 定义了log日志宏函数，方便打印日志在logcat中查看调试
 #define  TAG    "picktime"
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
@@ -16,7 +18,7 @@
 
 using namespace cv;
 
-extern "C"
+/*extern "C"
 
   JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_gray(JNIEnv *env, jclass object,jintArray buf, int w, int h) {
 
@@ -150,4 +152,37 @@ JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_desColor(JNIEnv
     env->ReleaseIntArrayElements(beforeArray, p_beforeBuffer, JNI_FALSE);
     env->ReleaseIntArrayElements(afterArray, p_afterBuffer, JNI_FALSE);
     return result;
+}*/
+
+extern "C" {
+JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_sketch(JNIEnv *env, jclass object, jobject originBitmap){
+    AndroidBitmapInfo   infoOut;
+    void * pixelsOut;
+    int ret;
+    // Get image info
+    if ((ret = AndroidBitmap_getInfo(env, originBitmap, &infoOut)) != 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+    // Check image
+    if (infoOut.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888!");
+        LOGE("==> %x", infoOut.format);
+        return;
+    }
+    int h = infoOut.height;         //图像高度
+    int w = infoOut.width;          //图像宽度
+    // Lock all images
+    if ((ret = AndroidBitmap_lockPixels(env, originBitmap, &pixelsOut)) != 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+        return;
+    }
+
+    Mat kernel_x(1, 2, CV_32FC1);   //初始化矩阵 mat(row,col)
+    Mat kernel_y(2, 1, CV_32FC1);
+    kernel_x.at<float>(0, 0) = kernel_y.at<float>(0, 0) = -1;   //给两个自定义卷积赋值 at(row,col)
+    kernel_x.at<float>(0, 1) = kernel_y.at<float>(1, 0) = 1;
+    //将originBitmap转换为Mat
+    Mat originMat(h,w,CV_8UC4,pixelsOut);
+
 }

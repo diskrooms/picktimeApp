@@ -39,6 +39,14 @@ JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_blur
 JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_desColor
   (JNIEnv *, jclass, jintArray, jintArray, jint, jint);
 
+/*
+ * Class:     tech_startech_picktime_NDKUtils
+ * Method:    sketch
+ * Signature: ([I)V
+ */
+JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_sketch
+  (JNIEnv *, jclass, jintArray);
+
 #ifdef __cplusplus
 }
 #endif
