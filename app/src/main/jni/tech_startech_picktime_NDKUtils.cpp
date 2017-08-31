@@ -15,6 +15,7 @@
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN , TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR , TAG, __VA_ARGS__)
 
+#define thresHold 100
 using namespace cv;
 
 /*extern "C"
@@ -184,9 +185,10 @@ extern "C"{
               //初始化Mat数据结构
               Mat tmp(info.height, info.width, CV_8UC4, pixels);
               Mat gray(info.height, info.width, CV_8U);
-              cvtColor(tmp,gray,CV_RGB2GRAY);
+              cvtColor(tmp,gray,CV_RGB2GRAY);       //(r+g+b)/3
+              Mat result(info.height, info.width, CV_8U);
               //第一种访问mat的方式
-              if(tmp.isContinuous()){
+              /*if(tmp.isContinuous()){
                 //LOGD("行数%d",tmp.rows);
                 //LOGD("列数%d",tmp.cols);
                 //LOGD("通道数%d",tmp.channels());
@@ -195,21 +197,37 @@ extern "C"{
                     for(int j=0;j < tmp.cols; pRow=pRow+4,j++){
                         //LOGD("列数%x",*pRow++);
                         int gray = (*pRow * 0.299 + (*pRow+1)*0.587 + (*pRow+2) * 0.114);
-                        //LOGD("列数%x",*pRow);
-                        //*pRow = gray;
-                        //*(pRow + 1) = gray;
-                        //*(pRow + 2) = gray;
+                        //LOGD("灰度%d",gray);
+                        *pRow = gray;
+                        *(pRow + 1) = gray;
+                        *(pRow + 2) = gray;
+                    }
+                }
+              }*/
+              //第二种访问mat的方式
+              for(int i=0;i < gray.rows;i++){
+                uchar* ptr = result.ptr<uchar>(i);
+                for(int j=0;j < gray.cols;j++){
+                    jboolean above = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i,j-1)) > thresHold;
+                    jboolean bottom = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i,j+1)) > thresHold;
+                    jboolean left = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i-1,j)) > thresHold;
+                    jboolean right = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i+1,j)) > thresHold;
+                    jboolean aboveLeft = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i-1,j-1)) > thresHold;
+                    jboolean aboveRight = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i+1,j-1)) > thresHold;
+                    jboolean bottomRight = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i+1,j+1)) > thresHold;
+                    jboolean bottomLeft = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i-1,j+1)) > thresHold;
+                    if(above || bottom || left || right || aboveLeft || aboveRight || bottomRight || bottomLeft){
+                        ptr[j] = 1;
+                    } else {
+                        ptr[j] = 0;
                     }
                 }
               }
-              //第二种访问mat的方式
-              for(int i=0;i < gray.rows;i++){
-                for(int j=0;j < gray.cols;j++){
-                    LOGD("列数%x",gray.at<uchar>(i,j));
-                }
-              }
+
               AndroidBitmap_unlockPixels(env, bitmap);
     }
+
+
 
 
 }
