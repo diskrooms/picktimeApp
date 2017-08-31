@@ -5,7 +5,7 @@
                     android:id="@+id/activity_browse_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    tools:context="net.diskrom.shiguang.BrowseImageActivity">
+                    tools:context="tech.startech.picktime.BrowseImageActivity">
 
         <ImageView
             android:id="@+id/browseImage"
