@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,7 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -26,14 +28,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static android.R.attr.src;
-import static org.opencv.core.CvType.CV_32FC1;
 
 
 public class BrowseImageActivity extends BaseActivity {
 
     static {
-        //System.loadLibrary("OpenCV");                         //导入动态链接库
+        System.loadLibrary("OpenCV");                         //导入动态链接库
         System.loadLibrary("opencv_java3");
     }
     private Bitmap bitmapOrigin;                              //维护一个存储原图Bitmap的变量
@@ -183,20 +183,99 @@ public class BrowseImageActivity extends BaseActivity {
                             //browseImage.setImageBitmap(nativeBlurProcess.blur(bitmapOrigin, 20,w,h));
 
                             //调用opencv的java api
-                            /*Mat OriginMat = new Mat(h,w, CvType.CV_8UC4);
+                            Mat OriginMat = new Mat(h,w, CvType.CV_8UC4);
                             Mat grayMat = new Mat();
                             Mat cannyEdgesMat = new Mat();
                             Utils.bitmapToMat(bitmapOrigin,OriginMat);
                             //转化为灰度图
                             Imgproc.cvtColor(OriginMat, grayMat, Imgproc.COLOR_BGR2GRAY);
-                            Imgproc.Canny(grayMat,cannyEdgesMat,50,300);
+
+                            /*Imgproc.Canny(grayMat,cannyEdgesMat,50,300);
                             Bitmap result = Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);
                             Utils.matToBitmap(cannyEdgesMat,result);
                             browseImage.setImageBitmap(result);*/
 
-                            //利用jni调用opencv的 C++ api
-                            NDKUtils ndk = new NDKUtils();
+                            //sobel算子进行边缘检测
+                            /*Mat grad_x = new Mat();
+                            Mat grad_y = new Mat();
+                            Mat abs_grad_x = new Mat();
+                            Mat abs_grad_y = new Mat();
+                            Imgproc.Sobel(grayMat,grad_x,CvType.CV_32F,1,0,3,1,0);    //沿X方向sobel梯度
+                            Imgproc.Sobel(grayMat,grad_y,CvType.CV_32F,0,1,3,1,0);    //沿Y方向sobel梯度
+                            Core.convertScaleAbs(grad_x,abs_grad_x);            //沿X方向sobel梯度绝对值
+                            Core.convertScaleAbs(grad_y,abs_grad_y);            //沿Y方向sobel梯度绝对值
+                            Mat result = new Mat();
+                            Core.addWeighted(abs_grad_x,0.5,abs_grad_y,0.5,1,result);   //X方向梯度和Y方向梯度绝对值求和
+                            Utils.matToBitmap(result,bitmapOrigin);             //Mat转换回位图
+                            browseImage.setImageBitmap(bitmapOrigin);*/
 
+                            //自定义核进行卷积运算
+                            //实际证明该方法对边缘检测的效果并没有优于经典的sobel算子
+                            //沿x方向梯度算子
+                            /*int x_kernalHeight = 1;
+                            int x_kernalWidth = 2;
+                            Mat x_kernalMat = new Mat(x_kernalHeight,x_kernalWidth,CvType.CV_8S){
+                                {
+                                    put(0,0,-1);
+                                    put(0,1,1);
+                                }
+                            };
+                            //沿y方向梯度算子
+                            int y_kernalHeight = 2;
+                            int y_kernalWidth = 1;
+                            Mat y_kernalMat = new Mat(y_kernalHeight,y_kernalWidth,CvType.CV_8S){
+                                {
+                                    put(0,0,-1);
+                                    put(1,0,1);
+                                }
+                            };
+                            Mat x_kernalMatPow2 = new Mat();
+                            Mat plusMat = new Mat();
+                            Core.pow(x_kernalMat,2,x_kernalMatPow2);
+                            Core.add(x_kernalMat,x_kernalMatPow2,plusMat);
+                            //LogUtils.v(plusMat.dump());
+                            //LogUtils.v(x_kernalMat.dump());
+                            int rows = grayMat.rows();
+                            int cols = grayMat.cols();
+                            Mat xGradientMat = new Mat(rows,cols,CvType.CV_64F);
+                            Mat yGradientMat = new Mat(rows,cols,CvType.CV_64F);
+
+                            //x方向卷积梯度
+                            Imgproc.filter2D(grayMat,xGradientMat,CvType.CV_64F,x_kernalMat);
+                            //y方向卷积梯度
+                            Imgproc.filter2D(grayMat,yGradientMat,CvType.CV_64F,y_kernalMat);
+                            Core.pow(xGradientMat,2,xGradientMat);
+                            Core.pow(yGradientMat,2,yGradientMat);
+                            Mat resultMat = new Mat(h,w,CvType.CV_64F);
+                            //平方和开根号
+                            Core.add(xGradientMat,yGradientMat,resultMat);
+                            Core.pow(resultMat,0.5,resultMat);
+                            resultMat.convertTo(resultMat,CvType.CV_8UC1);
+                            //Bitmap resultBitmap = Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);
+                            Utils.matToBitmap(resultMat,bitmapOrigin);
+                            browseImage.setImageBitmap(bitmapOrigin);*/
+
+                            //某点灰度值与邻域的灰度值之差的绝对值大于某个阈值GRAYTHRESHOLD设为白色 否则设为黑色
+                            //该方法仅仅提供一种思路 计算量太大 无法达到工业级要求
+                            /*final int  GRAYTHRESHOLD = 50;
+                            Mat sketchMat = new Mat(h,w,CvType.CV_8U,new Scalar(new double[]{0}));
+                            for(int i = 1;i < h-1; i ++){
+                                for(int j = 1;j < w-1;j++){
+                                    if (ifGray(grayMat, j, i, GRAYTHRESHOLD)) {
+                                        sketchMat.put(i, j, 1);
+                                    } else {
+                                        sketchMat.put(i, j, 0);
+                                    }
+                                }
+                            }
+                            //LogUtils.v(sketchMat.dump());
+                            Utils.matToBitmap(sketchMat,bitmapOrigin);
+                            browseImage.setImageBitmap(bitmapOrigin);*/
+
+                            NDKUtils ndk = new NDKUtils();
+                            LogUtils.v(bitmapOrigin.getConfig());
+                            ndk.reverse2(bitmapOrigin,w,h);
+                            browseImage.setImageBitmap(bitmapOrigin);
                             //修改状态
                             currentStatus = 1;
                         }
@@ -264,11 +343,35 @@ public class BrowseImageActivity extends BaseActivity {
                 });
             }
         });
+        //Glide end
 
         //加载图片到原图按钮
         Glide.with(BrowseImageActivity.this).load(path).into(resourceImage);
     }
 
+
+
+
+    /**
+     * 比较灰度矩阵各点与其邻域的灰度的差
+     * 只要有一点大于所给阈值给返回true 否则返回false
+     * @param mat1
+     * @param x
+     * @param y
+     * @param thresHold
+     * @return boolean
+     */
+    private boolean ifGray(Mat mat1,int x,int y,int thresHold){
+        boolean above = Math.abs(mat1.get(x,y)[0] - mat1.get(x,y-1)[0]) > thresHold;
+        boolean bottom = Math.abs(mat1.get(x,y)[0] - mat1.get(x,y+1)[0]) > thresHold;
+        boolean left = Math.abs(mat1.get(x,y)[0] - mat1.get(x-1,y)[0]) > thresHold;
+        boolean right = Math.abs(mat1.get(x,y)[0] - mat1.get(x+1,y)[0]) > thresHold;
+        boolean aboveLeft = Math.abs(mat1.get(x,y)[0] - mat1.get(x-1,y-1)[0]) > thresHold;
+        boolean aboveRight = Math.abs(mat1.get(x,y)[0] - mat1.get(x+1,y-1)[0]) > thresHold;
+        boolean bottomRight = Math.abs(mat1.get(x,y)[0] - mat1.get(x+1,y+1)[0]) > thresHold;
+        boolean bottomLeft = Math.abs(mat1.get(x,y)[0] - mat1.get(x-1,y+1)[0]) > thresHold;
+        return above || bottom || left || right || aboveLeft || aboveRight || bottomRight || bottomLeft;
+    }
     /**
      * 从图像Bitmap 获取像素值数组
      * bitmapOrigin 源图像

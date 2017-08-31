@@ -14,9 +14,9 @@ else
 endif
 
 
-LOCAL_MODULE := sketch
-LOCAL_SRC_FILES := sketch.cpp
-LOCAL_LDLIBS +=  -lm -llog
+LOCAL_MODULE := OpenCV
+LOCAL_SRC_FILES := tech_startech_picktime_NDKUtils.cpp
+LOCAL_LDLIBS +=  -lm -llog -ljnigraphics
 include $(BUILD_SHARED_LIBRARY)
 #$(warning "the value of LOCAL_PATH is$(BUILD_SHARED_LIBRARY)")
 

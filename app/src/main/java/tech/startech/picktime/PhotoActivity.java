@@ -634,14 +634,37 @@ public class PhotoActivity extends BaseActivity implements View.OnClickListener{
                 break;
             case R.id.openGallery:
                 //gridView.setAdapter(customGridViewAdapter);
-                //启动新的activity
-                Intent openGalleryIntent = new Intent(this,ListImageActivity.class);
-                startActivity(openGalleryIntent);
+                //启动自定义相册
+                //Intent openGalleryIntent = new Intent(this,ListImageActivity.class);
+                //startActivity(openGalleryIntent);
+                //调用系统相册
+                Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent,1);
                 break;
             default:
                 break;
         }
     }
+
+    //调用系统相册返回图片路径
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //获取图片路径
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumns = {MediaStore.Images.Media.DATA};
+            Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
+            c.moveToFirst();
+            int columnIndex = c.getColumnIndex(filePathColumns[0]);
+            String imagePath = c.getString(columnIndex);
+            Intent loadOneImageIntent = new Intent(this,SystemBrowseImageActivity.class);
+            loadOneImageIntent.putExtra("path",imagePath);
+            startActivity(loadOneImageIntent);
+            c.close();
+        }
+    }
+
+
 
     //拍照
     public void photo(){

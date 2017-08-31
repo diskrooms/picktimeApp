@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 #include <android/log.h>
-
-#include
+#include <android/bitmap.h>
 
 // 定义了log日志宏函数，方便打印日志在logcat中查看调试
 #define  TAG    "picktime"
@@ -154,35 +153,63 @@ JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_desColor(JNIEnv
     return result;
 }*/
 
-extern "C" {
-JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_sketch(JNIEnv *env, jclass object, jobject originBitmap){
-    AndroidBitmapInfo   infoOut;
-    void * pixelsOut;
-    int ret;
-    // Get image info
-    if ((ret = AndroidBitmap_getInfo(env, originBitmap, &infoOut)) != 0) {
-        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-        return;
-    }
-    // Check image
-    if (infoOut.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        LOGE("Bitmap format is not RGBA_8888!");
-        LOGE("==> %x", infoOut.format);
-        return;
-    }
-    int h = infoOut.height;         //图像高度
-    int w = infoOut.width;          //图像宽度
-    // Lock all images
-    if ((ret = AndroidBitmap_lockPixels(env, originBitmap, &pixelsOut)) != 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-        return;
+
+extern "C"{
+    //rgba图像去色并反相
+    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_reverse2(JNIEnv *env, jclass object, jobject bitmap, int w, int h){
+              AndroidBitmapInfo  info;
+              void*              pixels = NULL;
+
+              CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
+              //CV_Assert( src.dims == 2 && info.height == (uint32_t)src.rows && info.width == (uint32_t)src.cols );
+              //判断来源  CV_8UC1-单通道灰度图像
+              CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
+              CV_Assert( pixels );
+              for(int i = 0; i < w*h; i ++){
+                  //对于一个int四字节，其彩色值存储方式为：BGRA 注意存储顺序
+                  int rScale = (int)(*((uchar* )pixels+i*4));     //r通道
+                  int gScale = (int)(*((uchar* )pixels+i*4+1));       //g通道
+                  int bScale = (int)(*((uchar* )pixels+i*4+2));     //b通道
+                  int alpha = (int)(*((uchar* )pixels+i*4+3));     //alpha通道
+                  //LOGD("alpha %x",alpha);
+                  //LOGD("b通道%x",bScale);
+                  //LOGD("g通道%x",gScale);
+                  //LOGD("r通道%x",rScale);
+                  //LOGD("整数显示%x",*((int* )pixels+i)); //以整数显示是逆序的 比如rgba在内存中为64c8d2ff 但是整数显示为ffd2c864
+                  int grayScale = rScale*0.299 + gScale*0.587 + bScale * 0.114;
+                  //*((uchar*)pixels+i*4) = 255 - grayScale;
+                  //*((uchar*)pixels+i*4+1) = 255 - grayScale;
+                  //*((uchar*)pixels+i*4+2) = 255 - grayScale;
+              }
+              //初始化Mat数据结构
+              Mat tmp(info.height, info.width, CV_8UC4, pixels);
+              Mat gray(info.height, info.width, CV_8U);
+              cvtColor(tmp,gray,CV_RGB2GRAY);
+              //第一种访问mat的方式
+              if(tmp.isContinuous()){
+                //LOGD("行数%d",tmp.rows);
+                //LOGD("列数%d",tmp.cols);
+                //LOGD("通道数%d",tmp.channels());
+                for(int i = 0;i < tmp.rows; i++){
+                    uchar* pRow = (uchar*) tmp.ptr<uchar>(i);
+                    for(int j=0;j < tmp.cols; pRow=pRow+4,j++){
+                        //LOGD("列数%x",*pRow++);
+                        int gray = (*pRow * 0.299 + (*pRow+1)*0.587 + (*pRow+2) * 0.114);
+                        //LOGD("列数%x",*pRow);
+                        //*pRow = gray;
+                        //*(pRow + 1) = gray;
+                        //*(pRow + 2) = gray;
+                    }
+                }
+              }
+              //第二种访问mat的方式
+              for(int i=0;i < gray.rows;i++){
+                for(int j=0;j < gray.cols;j++){
+                    LOGD("列数%x",gray.at<uchar>(i,j));
+                }
+              }
+              AndroidBitmap_unlockPixels(env, bitmap);
     }
 
-    Mat kernel_x(1, 2, CV_32FC1);   //初始化矩阵 mat(row,col)
-    Mat kernel_y(2, 1, CV_32FC1);
-    kernel_x.at<float>(0, 0) = kernel_y.at<float>(0, 0) = -1;   //给两个自定义卷积赋值 at(row,col)
-    kernel_x.at<float>(0, 1) = kernel_y.at<float>(1, 0) = 1;
-    //将originBitmap转换为Mat
-    Mat originMat(h,w,CV_8UC4,pixelsOut);
 
 }

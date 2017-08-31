@@ -14,6 +14,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.TermCriteria;
 import org.opencv.utils.Converters;
 
+
 public class Core {
 
     // these constants are wrapped inside functions to prevent inlining
@@ -900,7 +901,7 @@ public class Core {
     }
 
     //javadoc: addWeighted(src1, alpha, src2, beta, gamma, dst)
-    public static void addWeighted(Mat src1, double alpha, Mat src2, double beta, double gamma, Mat dst)
+    public static void addWeighted(Mat src1,double alpha, Mat src2,double beta, double gamma, Mat dst)
     {
         
         addWeighted_1(src1.nativeObj, alpha, src2.nativeObj, beta, gamma, dst.nativeObj);
