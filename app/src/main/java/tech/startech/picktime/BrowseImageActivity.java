@@ -256,7 +256,6 @@ public class BrowseImageActivity extends BaseActivity {
                             browseImage.setImageBitmap(bitmapOrigin);*/
 
                             //某点灰度值与邻域的灰度值之差的绝对值大于某个阈值GRAYTHRESHOLD设为白色 否则设为黑色
-                            //该方法仅仅提供一种思路 计算量太大 无法达到工业级要求
                             /*final int  GRAYTHRESHOLD = 50;
                             Mat sketchMat = new Mat(h,w,CvType.CV_8U,new Scalar(new double[]{0}));
                             for(int i = 1;i < h-1; i ++){

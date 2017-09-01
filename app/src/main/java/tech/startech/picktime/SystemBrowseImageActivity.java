@@ -38,9 +38,17 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
             NDKUtils ndk = new NDKUtils();
             int w = originBitmap.getWidth();
             int h = originBitmap.getHeight();
-            ndk.reverse2(originBitmap,w,h);
+            byte[] sketch = ndk.reverse2(originBitmap,w,h);
+            //LogUtils.v(sketch);
+            int[] sketch_ = new int[w*h];
+            for(int i = 0;i < sketch_.length;i++){
+                int temp = (int)sketch[i] & 0x000000ff; //byte转换为int  java会自动在高位加1
+                sketch_[i] = temp << 16 | temp << 8 | temp |  0xff000000;   //java中的内存分布 argb
+            }
+            //LogUtils.v("%x",sketch_[0]);
+            Bitmap sketchBitmap = Bitmap.createBitmap(sketch_,w,h, Bitmap.Config.ARGB_8888);
             //LogUtils.v(i);
-            showImage.setImageBitmap(originBitmap);
+            showImage.setImageBitmap(sketchBitmap);
         }
     }
 }

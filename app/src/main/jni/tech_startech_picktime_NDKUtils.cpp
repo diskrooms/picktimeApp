@@ -156,8 +156,10 @@ JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_desColor(JNIEnv
 
 
 extern "C"{
-    //rgba图像去色并反相
-    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_reverse2(JNIEnv *env, jclass object, jobject bitmap, int w, int h){
+    //rgba图像处理去色
+    //operator_flag 操作标识
+    //1反相 2边缘检测
+    JNIEXPORT jbyteArray JNICALL Java_tech_startech_picktime_NDKUtils_reverse2(JNIEnv *env, jclass object, jobject bitmap, int w, int h){
               AndroidBitmapInfo  info;
               void*              pixels = NULL;
 
@@ -186,6 +188,7 @@ extern "C"{
               Mat tmp(info.height, info.width, CV_8UC4, pixels);
               Mat gray(info.height, info.width, CV_8U);
               cvtColor(tmp,gray,CV_RGB2GRAY);       //(r+g+b)/3
+
               Mat result(info.height, info.width, CV_8U);
               //第一种访问mat的方式
               /*if(tmp.isContinuous()){
@@ -205,7 +208,7 @@ extern "C"{
                 }
               }*/
               //第二种访问mat的方式
-              for(int i=0;i < gray.rows;i++){
+              /*for(int i=0;i < gray.rows;i++){
                 uchar* ptr = result.ptr<uchar>(i);
                 for(int j=0;j < gray.cols;j++){
                     jboolean above = abs(gray.at<uchar>(i,j) - gray.at<uchar>(i,j-1)) > thresHold;
@@ -222,12 +225,40 @@ extern "C"{
                         ptr[j] = 0;
                     }
                 }
+              }*/
+              Mat disColor;
+              gray.copyTo(disColor);
+              //灰度图反相(如果图像在内存中连续分布)
+              if(gray.isContinuous()){
+                  //LOGD("图像在内存中连续分布");
+                  for(int i = 0;i < gray.rows;i++){
+                    for(int j = 0;j < gray.cols;j++){
+                        //LOGD("黑白%d",gray.data[i*gray.rows + j]);
+                        gray.data[i*gray.cols + j] = 255 - gray.data[i*gray.cols + j];    //i要和cols匹配
+                        //LOGD("黑白%d",gray.data[i*gray.rows + j]);
+                    }
+                  }
+              } else {
+                  //LOGD("图像在内存中不连续分布");
+
               }
-
+              //高斯模糊
+              GaussianBlur(gray, gray, Size(15,15), 0, BORDER_DEFAULT); //高斯模糊的核要确保是正奇数 否则会报 ksize Assertion failed 错误
+              //颜色减淡公式  混合色 = 基色 + (基色 * 叠加色) / (255 - 叠加色);
+              for(int i = 0;i < gray.rows;i++){
+                  for(int j = 0;j < gray.cols;j++){
+                      int base = disColor.data[i*gray.cols + j];
+                      int add = gray.data[i*gray.cols + j];
+                      int mix = base + (base * add) / (255 - add);
+                      mix = (mix > 255) ? 255 : (mix < 0? 0 : mix);
+                      gray.data[i*gray.cols + j] = mix;
+                  }
+              }
+              jbyteArray resBuf = env->NewByteArray(gray.rows * gray.cols);
+              env->SetByteArrayRegion(resBuf, 0, gray.rows * gray.cols, (jbyte*)gray.data);
               AndroidBitmap_unlockPixels(env, bitmap);
+              return resBuf;
     }
-
-
 
 
 }
