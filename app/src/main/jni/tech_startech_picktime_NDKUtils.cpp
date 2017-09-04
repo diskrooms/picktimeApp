@@ -424,6 +424,23 @@ extern "C"{
         cvtColor(tmp,gray,CV_RGB2GRAY);
 
         //梯度图
+        Mat kernel_x(1, 2, CV_32FC1);
+        Mat kernel_y(2, 1, CV_32FC1);
+        LogCV_32F(kernel_x);
+        LogCV_32F(kernel_y);
+        kernel_x.at<float>(0, 0) = kernel_y.at<float>(0, 0) = -1;
+        kernel_x.at<float>(0, 1) = kernel_y.at<float>(1, 0) = 1;
+        Mat img_x, img_y, gradientImg;
+        filter2D(gray, img_x, CV_32FC1, kernel_x);
+        filter2D(gray, img_y, CV_32FC1, kernel_y);
+        pow(img_x, 2, img_x);
+        pow(img_y, 2, img_y);
+        gradientImg = img_x + img_y;
+        pow(gradientImg, 0.5, gradientImg);
 
+        jbyteArray resBuf = env->NewByteArray(gradientImg.rows * gradientImg.cols);
+        env->SetByteArrayRegion(resBuf, 0, gradientImg.rows * gradientImg.cols, (jbyte*)gradientImg.data);
+        AndroidBitmap_unlockPixels(env, bitmap);
+        return resBuf;
     }
 }
