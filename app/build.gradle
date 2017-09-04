@@ -45,10 +45,5 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.1'
     compile 'com.pkmmte.view:circularimageview:1.1'
     testCompile 'junit:junit:4.12'
-<<<<<<< HEAD
-    compile project(':lib')
-    compile project(path: ':openCVLibrary330')
-    compile project(':openCVLibrary330')
-=======
->>>>>>> 82ccf7d20def5b96e6b339f675e1bf2c35ac1919
+
 }
