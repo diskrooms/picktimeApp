@@ -10,6 +10,11 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++11 -frtti -fexceptions"
+            }
+        }
         ndk {
             moduleName "hellojni"       //生成的so库文件名
         }
@@ -19,6 +24,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
         }
     }
 }
@@ -45,10 +55,9 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.1'
     compile 'com.pkmmte.view:circularimageview:1.1'
     testCompile 'junit:junit:4.12'
-<<<<<<< HEAD
+
     compile project(':lib')
     compile project(path: ':openCVLibrary330')
     compile project(':openCVLibrary330')
-=======
->>>>>>> 82ccf7d20def5b96e6b339f675e1bf2c35ac1919
+
 }

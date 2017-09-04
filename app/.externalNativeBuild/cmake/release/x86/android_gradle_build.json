@@ -1,0 +1,28 @@
+
+{
+	"buildFiles" : [ "/root/AndroidStudioProjects/picktimeApp/app/CMakeLists.txt" ],
+	"cleanCommands" : 
+	[
+		"/root/Android/Sdk/cmake/3.6.4111459/bin/cmake --build /root/AndroidStudioProjects/picktimeApp/app/.externalNativeBuild/cmake/release/x86 --target clean"
+	],
+	"libraries" : 
+	{
+		"native-lib-Release-x86" : 
+		{
+			"abi" : "x86",
+			"artifactName" : "native-lib",
+			"buildCommand" : "/root/Android/Sdk/cmake/3.6.4111459/bin/cmake --build /root/AndroidStudioProjects/picktimeApp/app/.externalNativeBuild/cmake/release/x86 --target native-lib",
+			"buildType" : "release",
+			"output" : "/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/cmake/release/obj/x86/libnative-lib.so",
+			"toolchain" : "11623287784116073175"
+		}
+	},
+	"toolchains" : 
+	{
+		"11623287784116073175" : 
+		{
+			"cCompilerExecutable" : "/root/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/clang",
+			"cppCompilerExecutable" : "/root/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+		}
+	}
+}

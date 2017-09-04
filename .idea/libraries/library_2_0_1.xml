@@ -1,10 +1,12 @@
 <component name="libraryTable">
   <library name="library-2.0.1">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.android/build-cache/3123bf646b5a643bda9c4ff207d94a8064129681/output/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.android/build-cache/3123bf646b5a643bda9c4ff207d94a8064129681/output/res" />
+      <root url="file://$USER_HOME$/.android/build-cache/c9ce291e2106f3b27b7611c2492f82dd535e9c5e/output/res" />
+      <root url="jar://$USER_HOME$/.android/build-cache/c9ce291e2106f3b27b7611c2492f82dd535e9c5e/output/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.felipecsl.asymmetricgridview/library/2.0.1/e27bc866a9296f83be447ab740a0c916c4f4b7d/library-2.0.1-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>
