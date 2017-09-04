@@ -56,8 +56,11 @@ dependencies {
     compile 'com.pkmmte.view:circularimageview:1.1'
     testCompile 'junit:junit:4.12'
 
+<<<<<<< HEAD
     compile project(':lib')
     compile project(path: ':openCVLibrary330')
     compile project(':openCVLibrary330')
 
+=======
+>>>>>>> 42392e6903098320039eb026fb3c28d432e1c08a
 }

@@ -38,7 +38,10 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
             NDKUtils ndk = new NDKUtils();
             int w = originBitmap.getWidth();
             int h = originBitmap.getHeight();
-            byte[] sketch = ndk.reverse2(originBitmap,w,h);
+            //byte[] sketch = ndk.sketch(originBitmap,w,h);
+            //byte[] sketch = ndk.sketch2(originBitmap);
+            byte[] sketch = ndk.sketch3(originBitmap);
+
             //LogUtils.v(sketch);
             int[] sketch_ = new int[w*h];
             for(int i = 0;i < sketch_.length;i++){
@@ -49,6 +52,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
             Bitmap sketchBitmap = Bitmap.createBitmap(sketch_,w,h, Bitmap.Config.ARGB_8888);
             //LogUtils.v(i);
             showImage.setImageBitmap(sketchBitmap);
+
         }
     }
 }

@@ -273,7 +273,7 @@ public class BrowseImageActivity extends BaseActivity {
 
                             NDKUtils ndk = new NDKUtils();
                             LogUtils.v(bitmapOrigin.getConfig());
-                            ndk.reverse2(bitmapOrigin,w,h);
+                            //ndk.reverse2(bitmapOrigin,w,h);
                             browseImage.setImageBitmap(bitmapOrigin);
                             //修改状态
                             currentStatus = 1;

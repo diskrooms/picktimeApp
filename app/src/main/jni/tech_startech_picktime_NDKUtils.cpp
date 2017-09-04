@@ -14,9 +14,9 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO , TAG, __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN , TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR , TAG, __VA_ARGS__)
-
 #define thresHold 100
 using namespace cv;
+
 
 /*extern "C"
 
@@ -156,10 +156,114 @@ JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_desColor(JNIEnv
 
 
 extern "C"{
+    //打印Mat数据
+    void LogCV_8U(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        uchar* pData = mat.data;
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
+             }
+        }
+    }
+
+    void LogCV_8S(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        char* pData = (char*)mat.data;            //重要 uchar* 指针转为其他类型指针*才能访问
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%x",pData[i*(mat.cols) + j]);
+             }
+        }
+        /*switch(mat.type()){
+            case CV_8S:
+                 pData = (char*)mat.data;            //重要 uchar* 指针转为其他类型指针*才能访问
+
+                 break;
+            case CV_16U:
+                 pData = (ushort*)mat.data;
+                 break;
+            case CV_16S:
+                 pData = (short*)mat.data;
+                 break;
+            case CV_32S:
+                 pData = (int*)mat.data;
+                 break;
+            case CV_32F:
+                 pData = (float*)mat.data;
+                 break;
+            case CV_64F:
+                 pData = (double*)mat.data;
+                 break;
+            default:
+
+                 break;
+        }*/
+    }
+
+    void LogCV_16U(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        ushort* pData = (ushort*)mat.data;
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
+             }
+        }
+    }
+
+    void LogCV_16S(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        short* pData = (short*)mat.data;
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
+             }
+        }
+    }
+
+    void LogCV_32S(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        int* pData = (int*)mat.data;
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
+             }
+        }
+    }
+
+    void LogCV_32F(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        float* pData = (float*)mat.data;
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%f",pData[i*(mat.cols) + j]);
+             }
+        }
+    }
+
+    void LogCV_64F(const Mat& mat){
+        LOGD("打印Mat高度:%d",mat.rows);
+        LOGD("打印Mat宽度:%d",mat.cols);
+        double* pData = (double*)mat.data;
+        for(int i = 0; i < mat.rows; i++){
+             for(int j = 0; j < mat.cols; j++){
+                 LOGD("打印Mat:%f",pData[i*(mat.cols) + j]);
+             }
+        }
+    }
+
+
+
     //rgba图像处理去色
     //operator_flag 操作标识
     //1反相 2边缘检测
-    JNIEXPORT jbyteArray JNICALL Java_tech_startech_picktime_NDKUtils_reverse2(JNIEnv *env, jclass object, jobject bitmap, int w, int h){
+    JNIEXPORT jbyteArray JNICALL Java_tech_startech_picktime_NDKUtils_sketch(JNIEnv *env, jclass object, jobject bitmap, int w, int h){
               AndroidBitmapInfo  info;
               void*              pixels = NULL;
 
@@ -260,5 +364,66 @@ extern "C"{
               return resBuf;
     }
 
+    /**
+     * 素描算法2
+     * C++ 层的函数返回值要与java层的保持一致 否则会报一个 JNI invalid jobject error
+     * 自定义卷积核计算梯度
+     */
+    JNIEXPORT  jbyteArray JNICALL Java_tech_startech_picktime_NDKUtils_sketch2(JNIEnv *env, jclass object, jobject bitmap) {
+        AndroidBitmapInfo info;
+        void *pixels = NULL;
 
+        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
+        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
+        CV_Assert( pixels );
+        Mat tmp(info.height, info.width, CV_8UC4, pixels);
+        Mat gray(info.height, info.width, CV_8U);
+        cvtColor(tmp,gray,CV_RGB2GRAY);
+
+        //自定义方向卷积 1.用数组字面量初始化mat 2.用at方法单点赋值进行mat初始化
+        int x[9] = {-2,0,2,-2,0,2,-2,0,2};
+        int y[9] = {-1,-1,-1,-1,9,-1,-1,-1,-1};
+        Mat xKernel(3,3,CV_8S,x);
+        Mat yKernel(3,3,CV_8S,y);
+        /*xGradiant.at<int>(0,0) = -1;
+        xGradiant.at<int>(0,1) = 0;
+        xGradiant.at<int>(0,2) = 1;
+        xGradiant.at<int>(1,0) = -1;
+        xGradiant.at<int>(1,1) = 0;
+        xGradiant.at<int>(1,2) = 1;
+        xGradiant.at<int>(2,0) = -1;
+        xGradiant.at<int>(2,1) = 0;
+        xGradiant.at<int>(2,2) = 1;*/
+        //LogCV_32S(xGradiant);
+        Mat xGradiant;
+        Mat yGradiant;
+        Mat medianBlurMat;
+        //filter2D(gray, xGradiant, gray.type(), xKernel);
+        //filter2D(gray, yGradiant, gray.type(), yKernel);
+        medianBlur(gray,medianBlurMat,7);                       //中值滤波
+        Laplacian(medianBlurMat, medianBlurMat, CV_8U, 5);      //拉普拉斯边缘检测
+        threshold(medianBlurMat, medianBlurMat, 127, 255, THRESH_BINARY_INV);   //反二进制阈值操作
+        jbyteArray resBuf = env->NewByteArray(gray.rows * gray.cols);
+        env->SetByteArrayRegion(resBuf, 0, gray.rows * gray.cols, (jbyte*)medianBlurMat.data);
+        AndroidBitmap_unlockPixels(env, bitmap);
+        return resBuf;
+    }
+
+    /**
+     * 素描算法3
+     */
+    JNIEXPORT  jbyteArray JNICALL Java_tech_startech_picktime_NDKUtils_sketch3(JNIEnv *env, jclass object, jobject bitmap) {
+        AndroidBitmapInfo info;
+        void *pixels = NULL;
+
+        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
+        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
+        CV_Assert( pixels );
+        Mat tmp(info.height, info.width, CV_8UC4, pixels);
+        Mat gray(info.height, info.width, CV_8U);
+        cvtColor(tmp,gray,CV_RGB2GRAY);
+
+        //梯度图
+
+    }
 }
