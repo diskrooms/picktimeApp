@@ -1,6 +1,7 @@
 ﻿#include <jni.h>
 #include <string>
 #include <iostream>
+#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
@@ -19,7 +20,6 @@ using namespace cv;
 
 
 /*extern "C"
-
   JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_gray(JNIEnv *env, jclass object,jintArray buf, int w, int h) {
 
       jint *cbuf;
@@ -208,6 +208,7 @@ extern "C"{
         LOGD("打印Mat宽度:%d",mat.cols);
         ushort* pData = (ushort*)mat.data;
         for(int i = 0; i < mat.rows; i++){
+             LOGD("打印Mat:第%d行",i+1);
              for(int j = 0; j < mat.cols; j++){
                  LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
              }
@@ -219,6 +220,7 @@ extern "C"{
         LOGD("打印Mat宽度:%d",mat.cols);
         short* pData = (short*)mat.data;
         for(int i = 0; i < mat.rows; i++){
+             LOGD("打印Mat:第%d行",i+1);
              for(int j = 0; j < mat.cols; j++){
                  LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
              }
@@ -230,6 +232,7 @@ extern "C"{
         LOGD("打印Mat宽度:%d",mat.cols);
         int* pData = (int*)mat.data;
         for(int i = 0; i < mat.rows; i++){
+             LOGD("打印Mat:第%d行",i+1);
              for(int j = 0; j < mat.cols; j++){
                  LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
              }
@@ -241,6 +244,7 @@ extern "C"{
         LOGD("打印Mat宽度:%d",mat.cols);
         float* pData = (float*)mat.data;
         for(int i = 0; i < mat.rows; i++){
+             LOGD("打印Mat:第%d行",i+1);
              for(int j = 0; j < mat.cols; j++){
                  LOGD("打印Mat:%f",pData[i*(mat.cols) + j]);
              }
@@ -252,6 +256,7 @@ extern "C"{
         LOGD("打印Mat宽度:%d",mat.cols);
         double* pData = (double*)mat.data;
         for(int i = 0; i < mat.rows; i++){
+             LOGD("打印Mat:第%d行",i+1);
              for(int j = 0; j < mat.cols; j++){
                  LOGD("打印Mat:%f",pData[i*(mat.cols) + j]);
              }
@@ -380,7 +385,7 @@ extern "C"{
         Mat gray(info.height, info.width, CV_8U);
         cvtColor(tmp,gray,CV_RGB2GRAY);
 
-        //自定义方向卷积 1.用数组字面量初始化mat 2.用at方法单点赋值进行mat初始化
+        //自定义方向卷积 1.用数组字面量初始化mat 注意数组元素类型要与CvType保持一致 2.用at方法单点赋值进行mat初始化
         int x[9] = {-2,0,2,-2,0,2,-2,0,2};
         int y[9] = {-1,-1,-1,-1,9,-1,-1,-1,-1};
         Mat xKernel(3,3,CV_8S,x);
@@ -409,6 +414,54 @@ extern "C"{
         return resBuf;
     }
 
+    //逆时针90°操作mat
+    void rorate90(const Mat& src,Mat & dst){
+        transpose(src,dst);
+        flip(dst,dst,0);
+    }
+
+    //逆时针180°操作mat
+    void rorate180(const Mat& src,Mat & dst){
+        flip(src,dst,-1);
+    }
+    //逆时针270°操作mat
+    void rorate270(const Mat& src,Mat & dst){
+        transpose(src,dst);
+        flip(dst,dst,1);
+    }
+
+    //响应函数
+    static std::vector<Mat>& getResponse(const Mat& gradientImg, std::vector<Mat>& G_i) {
+        int maxIdx = 0;
+        const int rows = G_i[0].rows;
+        const int cols = G_i[0].cols;
+        const int size = G_i.size();
+        const float* gradientData = (float*)gradientImg.data;
+        float** data = new float*[size];
+        for (int i = 0; i < size; ++i)
+            data[i] = (float*)G_i[i].data;
+
+        int tmp;
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+                maxIdx = 0;
+                tmp = r * cols + c;
+                data[maxIdx][tmp] = gradientData[tmp];
+                for (int i = 0; i < size; ++i) {
+                    if (data[i][tmp] > data[maxIdx][tmp]) {
+                        data[maxIdx][tmp] = 0;
+                        maxIdx = i;
+                        data[i][tmp] = gradientData[tmp];
+                    } else {
+                        data[i][tmp] = 0;
+                    }
+                }
+            }
+        }
+
+        return G_i;
+    }
+
     /**
      * 素描算法3
      */
@@ -419,28 +472,167 @@ extern "C"{
         CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
         CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
         CV_Assert( pixels );
-        Mat tmp(info.height, info.width, CV_8UC4, pixels);
-        Mat gray(info.height, info.width, CV_8U);
+        const int h = info.height;
+        const int w = info.width;
+        Mat tmp(h, w, CV_8UC4, pixels);
+        Mat gray;
         cvtColor(tmp,gray,CV_RGB2GRAY);
-
-        //梯度图
-        Mat kernel_x(1, 2, CV_32FC1);
-        Mat kernel_y(2, 1, CV_32FC1);
-        LogCV_32F(kernel_x);
-        LogCV_32F(kernel_y);
+        //生成梯度图 1.用自定义卷积核实现
+        float x[2] = {-1,1};
+        float y[2] = {-1,1};
+        Mat kernel_x(1, 2, CV_32FC1, x);
+        Mat kernel_y(2, 1, CV_32FC1, y);
         kernel_x.at<float>(0, 0) = kernel_y.at<float>(0, 0) = -1;
         kernel_x.at<float>(0, 1) = kernel_y.at<float>(1, 0) = 1;
-        Mat img_x, img_y, gradientImg;
-        filter2D(gray, img_x, CV_32FC1, kernel_x);
-        filter2D(gray, img_y, CV_32FC1, kernel_y);
+        LogCV_32F(kernel_x);
+        LogCV_32F(kernel_y);
+        Mat img_x;
+        Mat img_y;
+        Mat resGradient;
+        filter2D(gray, img_x, -1, kernel_x);
+        filter2D(gray, img_y, -1, kernel_y);
         pow(img_x, 2, img_x);
         pow(img_y, 2, img_y);
-        gradientImg = img_x + img_y;
-        pow(gradientImg, 0.5, gradientImg);
+        resGradient = img_x + img_y;
+        pow(resGradient, 0.5, resGradient);
 
-        jbyteArray resBuf = env->NewByteArray(gradientImg.rows * gradientImg.cols);
-        env->SetByteArrayRegion(resBuf, 0, gradientImg.rows * gradientImg.cols, (jbyte*)gradientImg.data);
+        //2.手动循环像素点实现 注意边缘点
+        /*Mat xGradient(h,w,CV_32S);
+        Mat yGradient(h,w,CV_32S);
+        Mat resGradient(h,w,CV_8U);
+            //x方向梯度
+        for(int i = 0; i < h; i++){
+            //可读性更强代码
+            for(int j = 0; j < w;j++){
+                if(j == 0){
+                    //处理左边缘点
+                    xGradient.at<int>(i,j) = abs(gray.at<uchar>(i,j+1) -  gray.at<uchar>(i,j)) * 2;    //绝对值
+                } else if(j == w-1){
+                    //处理右边缘点
+                    xGradient.at<int>(i,j) = abs(gray.at<uchar>(i,j) -  gray.at<uchar>(i,j-1)) * 2;
+                } else {
+                    xGradient.at<int>(i,j) = abs(gray.at<uchar>(i,j+1) -  gray.at<uchar>(i,j-1)) * 2;
+                }
+            }
+            //效率更高代码(不需要判断分支)
+            //xGradient.at<int>(i,0) = abs(gray.at<uchar>(i,1) -  gray.at<uchar>(i,0)) * 2;
+            //for(int j = 1; j < w-1; j++){
+                //xGradient.at<int>(i,j) = abs(gray.at<uchar>(i,j+1) -  gray.at<uchar>(i,j-1)) * 2;
+            //}
+            //xGradient.at<int>(i,w-1) = abs(gray.at<uchar>(i,w-1) -  gray.at<uchar>(i,w-2)) * 2;
+        }
+            //y方向梯度
+        for(int i = 0; i < w; i++){
+            //可读性更强代码
+            for(int j = 0; j < h;j++){
+                if(j == 0){
+                    //处理上边缘点
+                    yGradient.at<int>(j,i) = abs(gray.at<uchar>(j+1,i) -  gray.at<uchar>(j,i)) * 2;    //绝对值
+                } else if(j == h-1){
+                    //处理下边缘点
+                    yGradient.at<int>(j,i) = abs(gray.at<uchar>(j,i) -  gray.at<uchar>(j-1,i)) * 2;
+                } else {
+                    yGradient.at<int>(j,i) = abs(gray.at<uchar>(j+1,i) -  gray.at<uchar>(j-1,i)) * 2;
+                }
+            }
+            //效率更高代码(不需要判断分支)
+            //yGradient.at<int>(0,i) = abs(gray.at<uchar>(1,i) -  gray.at<uchar>(0,i)) * 2;
+            //for(int j = 1; j < w-1; j++){
+                //yGradient.at<int>(j,i) = abs(gray.at<uchar>(j+1,i) -  gray.at<uchar>(j-1,i)) * 2;
+            //}
+            //yGradient.at<int>(h-1,i) = abs(gray.at<uchar>(h-1,i) -  gray.at<uchar>(h-2,i)) * 2;
+        }
+            //叠加x方向和y方向的梯度 然后转换成无符号数
+        convertScaleAbs(min(xGradient + yGradient, 255), resGradient);*/
+
+        //卷积核尺寸
+        int kernel_len = 5;
+        Mat kernel_90;
+        Mat kernel_135;
+        Mat kernel_180;
+        Mat kernel_225;
+        Mat kernel_270;
+        Mat kernel_315;
+        float scalar[25] = {0,-1,0,1,0,-1,-2,0,2,1,-2,-4,0,4,2,-1,-2,0,2,1,0,-1,0,1,0};
+        float scalar2[25] = {0,0,1,1,2,0,0,2,4,1,-1,-2,0,2,1,-1,-4,-2,0,0,-2,-1,-1,0,0};
+        Mat kernel_0(kernel_len, kernel_len, CV_32F, scalar); // 0° 方向
+        Mat kernel_45(kernel_len, kernel_len, CV_32F, scalar2); // 45° 方向
+        rorate90(kernel_0,kernel_90);           //90°方向
+        rorate90(kernel_45,kernel_135);          //135°方向
+        rorate180(kernel_0,kernel_180);         //180方向
+        rorate180(kernel_45,kernel_225);          //225°方向
+        rorate270(kernel_0,kernel_270);         //270°方向
+        rorate270(kernel_45,kernel_315);         //315°方向
+        //LogCV_32F(kernel_135);
+        std::vector<Mat> directEight(8, Mat());         //8个Mat存放8个方向的卷积
+        filter2D(resGradient, directEight[0], CV_8U, kernel_0);   //0°方向卷积
+        filter2D(resGradient, directEight[1], -1, kernel_45);   //45°方向卷积
+        filter2D(resGradient, directEight[2], -1, kernel_90);   //45°方向卷积
+
+        jbyteArray resBuf = env->NewByteArray(h * w);
+        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)resGradient.data);
         AndroidBitmap_unlockPixels(env, bitmap);
         return resBuf;
+
+        //生成线条图
+        /*int kernel_len = w < h ? w : h;
+        //kernel_len = (kernel_len / 60) * 2 + 1;
+        kernel_len = 7;
+        Mat kernel_hori(1, kernel_len, CV_32FC1, cv::Scalar(0)); // 0 or 180
+        Mat kernel_veri(kernel_len, 1, CV_32FC1, cv::Scalar(0)); // 90 or -90
+        Mat kernel_diag(kernel_len, kernel_len, CV_32FC1, cv::Scalar(0)); // -135, -45, 45, 135
+        kernel_hori.colRange(kernel_len / 2, kernel_len) = cv::Scalar(1);	// 0
+        kernel_veri.rowRange(kernel_len / 2, kernel_len) = cv::Scalar(1);	// 90
+        for (int i = 0; i < kernel_len / 2; ++i){	// -135
+            kernel_diag.at<float>(i, i) = 1;
+        }
+        // 0, 45, 90, 135, 180, -135, -90, -45
+        LogCV_32F(kernel_diag);
+        std::vector<Mat> G_i(8, Mat());
+        cv::filter2D(resGradient, G_i[0], CV_32FC1, kernel_hori);	// 0
+        cv::flip(kernel_hori, kernel_hori, 1);
+        cv::filter2D(resGradient, G_i[4], CV_32FC1, kernel_hori);	// 180
+        cv::filter2D(resGradient, G_i[2], CV_32FC1, kernel_veri);	// 90
+        cv::flip(kernel_veri, kernel_veri, 0);
+        cv::filter2D(resGradient, G_i[6], CV_32FC1, kernel_veri);	// -90
+        cv::filter2D(resGradient, G_i[5], CV_32FC1, kernel_diag);	// -135
+        cv::flip(kernel_diag, kernel_diag, 1);
+        cv::filter2D(resGradient, G_i[7], CV_32FC1, kernel_diag);	// -45
+        cv::flip(kernel_diag, kernel_diag, 0);
+        cv::filter2D(resGradient, G_i[1], CV_32FC1, kernel_diag);	// 45
+        cv::flip(kernel_diag, kernel_diag, 1);
+        cv::filter2D(resGradient, G_i[3], CV_32FC1, kernel_diag);	// 135
+
+        std::vector<Mat>& C_i = getResponse(resGradient, G_i);
+        cv::filter2D(C_i[4], C_i[4], -1, kernel_hori);	// 180
+        cv::flip(kernel_hori, kernel_hori, 1);
+        cv::filter2D(C_i[0], C_i[0], -1, kernel_hori);	// 0
+        cv::filter2D(C_i[6], C_i[6], -1, kernel_veri);	// -90
+        cv::flip(kernel_veri, kernel_veri, 0);
+        cv::filter2D(C_i[2], C_i[2], -1, kernel_veri);	// 90
+        cv::filter2D(C_i[3], C_i[3], -1, kernel_diag);	// 135
+        cv::flip(kernel_diag, kernel_diag, 0);
+        cv::filter2D(C_i[5], C_i[5], -1, kernel_diag);	// -135
+        cv::flip(kernel_diag, kernel_diag, 1);
+        cv::filter2D(C_i[7], C_i[7], -1, kernel_diag);	// -45
+        cv::flip(kernel_diag, kernel_diag, 0);
+        cv::filter2D(C_i[1], C_i[1], -1, kernel_diag);	// 45
+
+        Mat S_ = Mat::zeros(resGradient.rows, resGradient.cols, CV_32FC1);
+        for (int i = 0; i < C_i.size(); ++i){
+            S_ += C_i[i];
+        }
+        double minVal, maxVal;
+        cv::minMaxLoc(S_, &minVal, &maxVal);
+        Mat pencilStroke;
+        pencilStroke = (S_ - (float)minVal) / ((float)maxVal - (float)minVal);
+        pencilStroke = 1 - pencilStroke;
+
+        jbyteArray resBuf = env->NewByteArray(h * w);
+        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)pencilStroke.data);
+        AndroidBitmap_unlockPixels(env, bitmap);
+        return resBuf;*/
     }
+
+
 }

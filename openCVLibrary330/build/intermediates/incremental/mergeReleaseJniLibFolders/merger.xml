@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="/root/AndroidStudioProjects/picktimeApp/openCVLibrary330/src/main/jniLibs"/></dataSet><dataSet config="release"><source path="/root/AndroidStudioProjects/picktimeApp/openCVLibrary330/src/release/jniLibs"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\openCVLibrary330\src\main\jniLibs"/></dataSet><dataSet config="release"><source path="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\openCVLibrary330\src\release\jniLibs"/></dataSet></merger>
