@@ -263,8 +263,6 @@ extern "C"{
         }
     }
 
-
-
     //rgba图像处理去色
     //operator_flag 操作标识
     //1反相 2边缘检测
@@ -478,7 +476,7 @@ extern "C"{
         Mat gray;
         cvtColor(tmp,gray,CV_RGB2GRAY);
         //生成梯度图 1.用自定义卷积核实现
-        float x[2] = {-1,1};
+        /*float x[2] = {-1,1};
         float y[2] = {-1,1};
         Mat kernel_x(1, 2, CV_32FC1, x);
         Mat kernel_y(2, 1, CV_32FC1, y);
@@ -494,10 +492,10 @@ extern "C"{
         pow(img_x, 2, img_x);
         pow(img_y, 2, img_y);
         resGradient = img_x + img_y;
-        pow(resGradient, 0.5, resGradient);
+        pow(resGradient, 0.5, resGradient);*/
 
         //2.手动循环像素点实现 注意边缘点
-        /*Mat xGradient(h,w,CV_32S);
+        Mat xGradient(h,w,CV_32S);
         Mat yGradient(h,w,CV_32S);
         Mat resGradient(h,w,CV_8U);
             //x方向梯度
@@ -543,7 +541,7 @@ extern "C"{
             //yGradient.at<int>(h-1,i) = abs(gray.at<uchar>(h-1,i) -  gray.at<uchar>(h-2,i)) * 2;
         }
             //叠加x方向和y方向的梯度 然后转换成无符号数
-        convertScaleAbs(min(xGradient + yGradient, 255), resGradient);*/
+        convertScaleAbs(min(xGradient + yGradient, 255), resGradient);
 
         //卷积核尺寸
         int kernel_len = 5;
@@ -565,12 +563,45 @@ extern "C"{
         rorate270(kernel_45,kernel_315);         //315°方向
         //LogCV_32F(kernel_135);
         std::vector<Mat> directEight(8, Mat());         //8个Mat存放8个方向的卷积
-        filter2D(resGradient, directEight[0], CV_8U, kernel_0);   //0°方向卷积
-        filter2D(resGradient, directEight[1], -1, kernel_45);   //45°方向卷积
-        filter2D(resGradient, directEight[2], -1, kernel_90);   //45°方向卷积
+        filter2D(gray, directEight[0], CV_8U, kernel_0);   //0°方向卷积
+        filter2D(gray, directEight[1], CV_8U, kernel_45);   //45°方向卷积
+        filter2D(gray, directEight[2], CV_8U, kernel_90);   //90°方向卷积
+        filter2D(gray, directEight[3], CV_8U, kernel_135);   //135°方向卷积
+        filter2D(gray, directEight[4], CV_8U, kernel_180);   //180°方向卷积
+        filter2D(gray, directEight[5], CV_8U, kernel_225);   //225°方向卷积
+        filter2D(gray, directEight[6], CV_8U, kernel_270);   //270°方向卷积
+        filter2D(gray, directEight[7], CV_8U, kernel_315);   //315°方向卷积
 
+        /*filter2D(resGradient, directEight[0], CV_8U, kernel_0);   //0°方向卷积
+        filter2D(resGradient, directEight[1], CV_8U, kernel_45);   //45°方向卷积
+        filter2D(resGradient, directEight[2], CV_8U, kernel_90);   //90°方向卷积
+        filter2D(resGradient, directEight[3], CV_8U, kernel_135);   //135°方向卷积
+        filter2D(resGradient, directEight[4], CV_8U, kernel_180);   //180°方向卷积
+        filter2D(resGradient, directEight[5], CV_8U, kernel_225);   //225°方向卷积
+        filter2D(resGradient, directEight[6], CV_8U, kernel_270);   //270°方向卷积
+        filter2D(resGradient, directEight[7], CV_8U, kernel_315);   //315°方向卷积*/
+        //8个卷积最大值求和
+        Mat directEightPlus(h,w,CV_8U);
+        for(int i = 0; i < h; i++){
+            for(int j = 0;j < w;j++){
+                char min = directEight[0].data[i*w+j];
+                for(int index = 1; index < 8; index++){
+                    char temp = directEight[index].data[i*w+j];
+                    if(temp < min){
+                        min = temp;
+                    }
+                }
+                directEightPlus.at<uchar>(i,j) = min;       //使用at赋值要显式定义 mat 的空间大小
+            }
+        }
+        threshold(directEightPlus, directEightPlus, 127, 255, THRESH_BINARY_INV);
+        //double minVal, maxVal;
+        //cv::minMaxLoc(directEightPlus, &minVal, &maxVal);
+        //Mat pencilStroke;
+        //pencilStroke = (directEightPlus - (float)minVal) / ((float)maxVal - (float)minVal);
+        //pencilStroke = 1 - pencilStroke;
         jbyteArray resBuf = env->NewByteArray(h * w);
-        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)resGradient.data);
+        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)directEightPlus.data);
         AndroidBitmap_unlockPixels(env, bitmap);
         return resBuf;
 
