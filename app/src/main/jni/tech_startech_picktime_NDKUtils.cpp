@@ -466,15 +466,16 @@ extern "C"{
     JNIEXPORT  jbyteArray JNICALL Java_tech_startech_picktime_NDKUtils_sketch3(JNIEnv *env, jclass object, jobject bitmap) {
         AndroidBitmapInfo info;
         void *pixels = NULL;
-
         CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
         CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
         CV_Assert( pixels );
         const int h = info.height;
         const int w = info.width;
-        Mat tmp(h, w, CV_8UC4, pixels);
+
+        Mat tmp(h,w,CV_8UC4,pixels);
         Mat gray;
         cvtColor(tmp,gray,CV_RGB2GRAY);
+
         //生成梯度图 1.用自定义卷积核实现
         /*float x[2] = {-1,1};
         float y[2] = {-1,1};
@@ -551,8 +552,11 @@ extern "C"{
         Mat kernel_225;
         Mat kernel_270;
         Mat kernel_315;
-        float scalar[25] = {0,-1,0,1,0,-1,-2,0,2,1,-2,-4,0,4,2,-1,-2,0,2,1,0,-1,0,1,0};
-        float scalar2[25] = {0,0,1,1,2,0,0,2,4,1,-1,-2,0,2,1,-1,-4,-2,0,0,-2,-1,-1,0,0};
+        //float scalar[25] = {0,-1,0,1,0,-1,-2,0,2,1,-2,-4,0,4,2,-1,-2,0,2,1,0,-1,0,1,0};
+        //float scalar2[25] = {0,0,1,1,2,0,0,2,4,1,-1,-2,0,2,1,-1,-4,-2,0,0,-2,-1,-1,0,0};
+        float scalar[25] = {0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0};
+        float scalar2[25] = {0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
         Mat kernel_0(kernel_len, kernel_len, CV_32F, scalar); // 0° 方向
         Mat kernel_45(kernel_len, kernel_len, CV_32F, scalar2); // 45° 方向
         rorate90(kernel_0,kernel_90);           //90°方向
@@ -563,106 +567,63 @@ extern "C"{
         rorate270(kernel_45,kernel_315);         //315°方向
         //LogCV_32F(kernel_135);
         std::vector<Mat> directEight(8, Mat());         //8个Mat存放8个方向的卷积
-        filter2D(gray, directEight[0], CV_8U, kernel_0);   //0°方向卷积
+        /*filter2D(gray, directEight[0], CV_8U, kernel_0);   //0°方向卷积
         filter2D(gray, directEight[1], CV_8U, kernel_45);   //45°方向卷积
         filter2D(gray, directEight[2], CV_8U, kernel_90);   //90°方向卷积
         filter2D(gray, directEight[3], CV_8U, kernel_135);   //135°方向卷积
         filter2D(gray, directEight[4], CV_8U, kernel_180);   //180°方向卷积
         filter2D(gray, directEight[5], CV_8U, kernel_225);   //225°方向卷积
         filter2D(gray, directEight[6], CV_8U, kernel_270);   //270°方向卷积
-        filter2D(gray, directEight[7], CV_8U, kernel_315);   //315°方向卷积
+        filter2D(gray, directEight[7], CV_8U, kernel_315);   //315°方向卷积*/
 
-        /*filter2D(resGradient, directEight[0], CV_8U, kernel_0);   //0°方向卷积
+        filter2D(resGradient, directEight[0], CV_8U, kernel_0);   //0°方向卷积
         filter2D(resGradient, directEight[1], CV_8U, kernel_45);   //45°方向卷积
         filter2D(resGradient, directEight[2], CV_8U, kernel_90);   //90°方向卷积
         filter2D(resGradient, directEight[3], CV_8U, kernel_135);   //135°方向卷积
         filter2D(resGradient, directEight[4], CV_8U, kernel_180);   //180°方向卷积
         filter2D(resGradient, directEight[5], CV_8U, kernel_225);   //225°方向卷积
         filter2D(resGradient, directEight[6], CV_8U, kernel_270);   //270°方向卷积
-        filter2D(resGradient, directEight[7], CV_8U, kernel_315);   //315°方向卷积*/
-        //8个卷积最大值求和
-        Mat directEightPlus(h,w,CV_8U);
+        filter2D(resGradient, directEight[7], CV_8U, kernel_315);   //315°方向卷积
+        //8个卷积保留最大值 其他方向置为0
+        Mat directEightPlus(h,w,CV_8U); //使用at赋值要显式定义 mat 的空间大小
         for(int i = 0; i < h; i++){
             for(int j = 0;j < w;j++){
-                char min = directEight[0].data[i*w+j];
+                char max = directEight[0].data[i*w+j];
                 for(int index = 1; index < 8; index++){
                     char temp = directEight[index].data[i*w+j];
-                    if(temp < min){
-                        min = temp;
+                    if(temp < max){
+                        max = temp;
+                        directEight[index-1].at<uchar>(i,j) = 0;
+                    } else {
+                        directEight[index].at<uchar>(i,j) = 0;
                     }
                 }
-                directEightPlus.at<uchar>(i,j) = min;       //使用at赋值要显式定义 mat 的空间大小
             }
         }
-        threshold(directEightPlus, directEightPlus, 127, 255, THRESH_BINARY_INV);
-        //double minVal, maxVal;
-        //cv::minMaxLoc(directEightPlus, &minVal, &maxVal);
-        //Mat pencilStroke;
-        //pencilStroke = (directEightPlus - (float)minVal) / ((float)maxVal - (float)minVal);
-        //pencilStroke = 1 - pencilStroke;
+        //8个方向再卷积一次
+        filter2D(directEight[0], directEight[0], CV_8U, kernel_0);   //0°方向卷积
+        filter2D(directEight[1], directEight[1], CV_8U, kernel_45);   //45°方向卷积
+        filter2D(directEight[2], directEight[2], CV_8U, kernel_90);   //90°方向卷积
+        filter2D(directEight[3], directEight[3], CV_8U, kernel_135);   //135°方向卷积
+        filter2D(directEight[4], directEight[4], CV_8U, kernel_180);   //180°方向卷积
+        filter2D(directEight[5], directEight[5], CV_8U, kernel_225);   //225°方向卷积
+        filter2D(directEight[6], directEight[6], CV_8U, kernel_270);   //270°方向卷积
+        filter2D(directEight[7], directEight[7], CV_8U, kernel_315);   //315°方向卷积
+
+        Mat result = Mat::zeros(h, w, CV_8U);
+        for (int i = 0; i < directEight.size(); i++){
+            result += directEight[i];
+        }
+        /*double minVal, maxVal;
+        minMaxLoc(result, &minVal, &maxVal);
+        Mat pencilStroke;
+        pencilStroke = (result - (int)minVal) / ((int)maxVal - (int)minVal);
+        pencilStroke = 1 - pencilStroke;*/
+
         jbyteArray resBuf = env->NewByteArray(h * w);
-        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)directEightPlus.data);
+        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)gray.data);
         AndroidBitmap_unlockPixels(env, bitmap);
         return resBuf;
-
-        //生成线条图
-        /*int kernel_len = w < h ? w : h;
-        //kernel_len = (kernel_len / 60) * 2 + 1;
-        kernel_len = 7;
-        Mat kernel_hori(1, kernel_len, CV_32FC1, cv::Scalar(0)); // 0 or 180
-        Mat kernel_veri(kernel_len, 1, CV_32FC1, cv::Scalar(0)); // 90 or -90
-        Mat kernel_diag(kernel_len, kernel_len, CV_32FC1, cv::Scalar(0)); // -135, -45, 45, 135
-        kernel_hori.colRange(kernel_len / 2, kernel_len) = cv::Scalar(1);	// 0
-        kernel_veri.rowRange(kernel_len / 2, kernel_len) = cv::Scalar(1);	// 90
-        for (int i = 0; i < kernel_len / 2; ++i){	// -135
-            kernel_diag.at<float>(i, i) = 1;
-        }
-        // 0, 45, 90, 135, 180, -135, -90, -45
-        LogCV_32F(kernel_diag);
-        std::vector<Mat> G_i(8, Mat());
-        cv::filter2D(resGradient, G_i[0], CV_32FC1, kernel_hori);	// 0
-        cv::flip(kernel_hori, kernel_hori, 1);
-        cv::filter2D(resGradient, G_i[4], CV_32FC1, kernel_hori);	// 180
-        cv::filter2D(resGradient, G_i[2], CV_32FC1, kernel_veri);	// 90
-        cv::flip(kernel_veri, kernel_veri, 0);
-        cv::filter2D(resGradient, G_i[6], CV_32FC1, kernel_veri);	// -90
-        cv::filter2D(resGradient, G_i[5], CV_32FC1, kernel_diag);	// -135
-        cv::flip(kernel_diag, kernel_diag, 1);
-        cv::filter2D(resGradient, G_i[7], CV_32FC1, kernel_diag);	// -45
-        cv::flip(kernel_diag, kernel_diag, 0);
-        cv::filter2D(resGradient, G_i[1], CV_32FC1, kernel_diag);	// 45
-        cv::flip(kernel_diag, kernel_diag, 1);
-        cv::filter2D(resGradient, G_i[3], CV_32FC1, kernel_diag);	// 135
-
-        std::vector<Mat>& C_i = getResponse(resGradient, G_i);
-        cv::filter2D(C_i[4], C_i[4], -1, kernel_hori);	// 180
-        cv::flip(kernel_hori, kernel_hori, 1);
-        cv::filter2D(C_i[0], C_i[0], -1, kernel_hori);	// 0
-        cv::filter2D(C_i[6], C_i[6], -1, kernel_veri);	// -90
-        cv::flip(kernel_veri, kernel_veri, 0);
-        cv::filter2D(C_i[2], C_i[2], -1, kernel_veri);	// 90
-        cv::filter2D(C_i[3], C_i[3], -1, kernel_diag);	// 135
-        cv::flip(kernel_diag, kernel_diag, 0);
-        cv::filter2D(C_i[5], C_i[5], -1, kernel_diag);	// -135
-        cv::flip(kernel_diag, kernel_diag, 1);
-        cv::filter2D(C_i[7], C_i[7], -1, kernel_diag);	// -45
-        cv::flip(kernel_diag, kernel_diag, 0);
-        cv::filter2D(C_i[1], C_i[1], -1, kernel_diag);	// 45
-
-        Mat S_ = Mat::zeros(resGradient.rows, resGradient.cols, CV_32FC1);
-        for (int i = 0; i < C_i.size(); ++i){
-            S_ += C_i[i];
-        }
-        double minVal, maxVal;
-        cv::minMaxLoc(S_, &minVal, &maxVal);
-        Mat pencilStroke;
-        pencilStroke = (S_ - (float)minVal) / ((float)maxVal - (float)minVal);
-        pencilStroke = 1 - pencilStroke;
-
-        jbyteArray resBuf = env->NewByteArray(h * w);
-        env->SetByteArrayRegion(resBuf, 0, h * w, (jbyte*)pencilStroke.data);
-        AndroidBitmap_unlockPixels(env, bitmap);
-        return resBuf;*/
     }
 
 
