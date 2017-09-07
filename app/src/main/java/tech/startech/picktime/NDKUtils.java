@@ -19,4 +19,5 @@ public class NDKUtils {
     public static native byte[] sketch2(Bitmap bitmap);               //素描算法2
     //public static native byte[] otsu(Bitmap bitmap);                    //Otsu算法
     public static native byte[] sketch3(Bitmap bitmap);                 //
+    public static native int[] goodMorning(Bitmap bitmap);             //早!
 }

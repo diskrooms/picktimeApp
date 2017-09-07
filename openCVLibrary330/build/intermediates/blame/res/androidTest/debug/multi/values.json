@@ -1,18 +1,22 @@
 [
     {
-        "outputFile": "/root/AndroidStudioProjects/picktimeApp/C:\\root\\AndroidStudioProjects\\picktimeApp\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
+        "outputFile": "C:\\root\\AndroidStudioProjects\\picktimeApp\\C:\\root\\AndroidStudioProjects\\picktimeApp\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
         "map": []
     },
     {
-        "outputFile": "/root/AndroidStudioProjects/picktimeApp/C:\\root\\AndroidStudioProjects\\picktimeApp\\C:\\Users\\jsb-hdp-0\\AndroidStudioProjects\\pickTime\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
+        "outputFile": "C:\\root\\AndroidStudioProjects\\picktimeApp\\C:\\root\\AndroidStudioProjects\\picktimeApp\\C:\\Users\\jsb-hdp-0\\AndroidStudioProjects\\pickTime\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
         "map": []
     },
     {
-        "outputFile": "/root/AndroidStudioProjects/picktimeApp/openCVLibrary330/build/intermediates/incremental/mergeDebugAndroidTestResources/merged.dir/values/values.xml",
+        "outputFile": "C:\\root\\AndroidStudioProjects\\picktimeApp\\C:\\Users\\jsb-hdp-0\\AndroidStudioProjects\\pickTime\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
         "map": []
     },
     {
-        "outputFile": "/root/AndroidStudioProjects/picktimeApp/C:\\Users\\jsb-hdp-0\\AndroidStudioProjects\\pickTime\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
+        "outputFile": "C:\\root\\AndroidStudioProjects\\picktimeApp\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
+        "map": []
+    },
+    {
+        "outputFile": "C:\\Users\\jsb-hdp-0\\AndroidStudioProjects\\pickTime\\openCVLibrary330\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values\\values.xml",
         "map": []
     }
 ]

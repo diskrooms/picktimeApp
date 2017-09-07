@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="2"
         android:background="@color/transparent"
-        android:scaleType="fitCenter"/>
+        android:scaleType="center"/>
 
     <HorizontalScrollView
         android:id="@+id/toolBox"
@@ -104,7 +104,7 @@
                         android:layout_width="96dp"
                         android:layout_height="96dp"
                         android:gravity="center"
-                        android:text=""
+                        android:text="素描"
                         android:textSize="16sp"/>
                 </RelativeLayout>
             </LinearLayout>
@@ -121,7 +121,6 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-
                     <com.pkmmte.view.CircularImageView
                         android:id="@+id/rasterizeImage"
                         android:layout_width="96dp"
@@ -129,12 +128,11 @@
                         android:layout_alignParentStart="true"
                         android:layout_alignParentTop="true"
                         android:src="@drawable/sketch_unclick"/>
-
                     <TextView
                         android:layout_width="96dp"
                         android:layout_height="96dp"
                         android:gravity="center"
-                        android:text="栅格化"
+                        android:text="早!"
                         android:textSize="16sp"/>
                 </RelativeLayout>
             </LinearLayout>

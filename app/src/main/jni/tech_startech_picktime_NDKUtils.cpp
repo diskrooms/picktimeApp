@@ -162,7 +162,7 @@ extern "C"{
         LOGD("打印Mat宽度:%d",mat.cols);
         uchar* pData = mat.data;
         for(int i = 0; i < mat.rows; i++){
-             for(int j = 0; j < mat.cols; j++){
+             for(int j = 0; j < mat.cols*(mat.channels()); j++){
                  LOGD("打印Mat:%d",pData[i*(mat.cols) + j]);
              }
         }
@@ -626,5 +626,27 @@ extern "C"{
         return resBuf;
     }
 
+    /**
+     * 九宫格图片
+     */
+    JNIEXPORT  jintArray JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jclass object, jobject bitmap) {
+        AndroidBitmapInfo info;
+        void *pixels = NULL;
+        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
+        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
+        CV_Assert( pixels );
+        const int h = info.height;
+        const int w = info.width;
 
+        Mat origin(h,w,CV_8UC4,pixels);
+        //Mat roi_img_1(origin,Range(0,20),Range(0,20));    //并不能达到预期效果
+        Mat roi_img_1;
+        origin(Rect(0,0,1000,1000)).copyTo(roi_img_1);      //origin返回的是自身的指针 所以要copyTo才能达到预期效果
+
+        //LogCV_8U(roi_img_1);
+        jintArray resBuf = env->NewIntArray(1000 * 1000);
+        env->SetIntArrayRegion(resBuf, 0, 1000 * 1000, (jint*)roi_img_1.data);
+        AndroidBitmap_unlockPixels(env, bitmap);
+        return resBuf;
+    }
 }
