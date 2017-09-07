@@ -26,10 +26,14 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
         Intent intent = getIntent();
         String path = intent.getStringExtra("path");
         //加载图片
+        //LogUtils.v(CommonUtils.getPicDegree(path));
         originBitmap = BitmapFactory.decodeFile(path);
         showImage = (ImageView)findViewById(R.id.browseImage);
         sketch = (CircularImageView)findViewById(R.id.sketchImage);
-        showImage.setImageBitmap(originBitmap);
+        //检测图片旋转角度 如果被旋转了 就再旋转回来
+        int degree = CommonUtils.getPicDegree(path);
+        Bitmap newBitmap = CommonUtils.rotateBitmapDegree(originBitmap,degree);
+        showImage.setImageBitmap(newBitmap);
         sketch.setOnClickListener(this);
     }
 
