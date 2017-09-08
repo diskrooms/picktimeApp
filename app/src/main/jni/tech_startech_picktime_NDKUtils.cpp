@@ -17,7 +17,7 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR , TAG, __VA_ARGS__)
 #define thresHold 100
 using namespace cv;
-
+using namespace std;
 
 /*extern "C"
   JNIEXPORT jintArray JNICALL Java_tech_startech_picktime_NDKUtils_gray(JNIEnv *env, jclass object,jintArray buf, int w, int h) {
@@ -627,9 +627,9 @@ extern "C"{
     }
 
     /**
-     * 九宫格图片
+     * 九宫格图片(测试接口 仅供测试用)
      */
-    JNIEXPORT  jintArray JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jclass object, jobject bitmap) {
+    JNIEXPORT  jintArray JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning_test(JNIEnv *env, jclass object, jobject bitmap) {
         AndroidBitmapInfo info;
         void *pixels = NULL;
         CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
@@ -638,15 +638,39 @@ extern "C"{
         const int h = info.height;
         const int w = info.width;
 
+        Mat roi_img_1,roi_img_2,roi_img_3,roi_img_4,roi_img_5,roi_img_6,roi_img_7,roi_img_8,roi_img_9;
+        const int deltaWidth = 5;
+        const int deltaHeight = 5;
+        //求出9块区域的坐标
+        int p_width = (int)(w - 2 * deltaWidth)/3;          //每一块区域的宽度
+        int p_height = (int)(h - 2 * deltaHeight)/3;        //每一块区域的高度
+        vector<Rect> roi_vector;
+
+        //Rect roi_img_1_rect = Rect(0,0,p_width,p_height);
+        //Rect roi_img_2_rect = Rect(p_width+deltaWidth,0,p_width,p_height);
+        for(int i = 0;i < 3; i++){
+            for(int j = 0;j < 3;j++){
+                roi_vector[i*3+j] = Rect(j*(p_width+deltaWidth),i*(p_height+deltaHeight),p_width,p_height);
+            }
+        }
+
+
         Mat origin(h,w,CV_8UC4,pixels);
-        //Mat roi_img_1(origin,Range(0,20),Range(0,20));    //并不能达到预期效果
-        Mat roi_img_1;
         origin(Rect(0,0,1000,1000)).copyTo(roi_img_1);      //origin返回的是自身的指针 所以要copyTo才能达到预期效果
+        //Mat temp(origin,Range(0,1000),Range(0,1000));
+        //temp.copyTo(roi_img_1);
+
 
         //LogCV_8U(roi_img_1);
         jintArray resBuf = env->NewIntArray(1000 * 1000);
         env->SetIntArrayRegion(resBuf, 0, 1000 * 1000, (jint*)roi_img_1.data);
         AndroidBitmap_unlockPixels(env, bitmap);
         return resBuf;
+    }
+
+    //早安
+    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jlong object) {
+        Mat* mat = (Mat*) object;
+
     }
 }

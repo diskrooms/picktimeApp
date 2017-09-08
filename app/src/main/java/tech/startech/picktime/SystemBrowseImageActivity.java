@@ -11,6 +11,11 @@ import android.widget.ImageView;
 import com.apkfuns.logutils.LogUtils;
 import com.pkmmte.view.CircularImageView;
 
+import org.opencv.core.Mat;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class SystemBrowseImageActivity extends AppCompatActivity implements View.OnClickListener{
     static {
         System.loadLibrary("OpenCV");                         //导入动态链接库
@@ -65,7 +70,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
             showImage.setImageBitmap(sketchBitmap);
         } else if(v.getId() == R.id.rasterizeImage){
             //九宫格
-            int[] goodMorning = ndk.goodMorning(originBitmap);
+            /*int[] goodMorning = ndk.goodMorning_test(originBitmap);
             int length = goodMorning.length;
             int[] goodMorning_ = new int[length];
             int[] originIndex = new int[w*h];
@@ -79,8 +84,15 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
                 //LogUtils.v("%x",originIndex[i]);
                 //LogUtils.v("%x",goodMorning_[i]);
             }
+
             Bitmap goodMorningBitmap = Bitmap.createBitmap(goodMorning_,1000,1000, Bitmap.Config.ARGB_8888);
-            showImage.setImageBitmap(goodMorningBitmap);
+            showImage.setImageBitmap(goodMorningBitmap);*/
+
+            //jni返回多个bitmap 不好实现 不得已用 java封装层的api在java层先定义好Mat 然后传入jni
+            Mat mats = new Mat();
+
+            ndk.goodMorning(mats.getNativeObjAddr());
+
         }
     }
 }
