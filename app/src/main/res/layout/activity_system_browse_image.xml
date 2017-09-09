@@ -7,33 +7,45 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 tools:context="tech.startech.picktime.SystemBrowseImageActivity">
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/transparent">
+        android:background="@color/white"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStart="0dp">
+
         <ImageButton
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="#0000"
-            app:srcCompat="@drawable/chevron_left"/>
-        <Button
-            android:id="@+id/save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="保存"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp"/>
+            app:srcCompat="@drawable/chevron_left" />
+
     </android.support.v7.widget.Toolbar>
 
-    <ImageView
-        android:id="@+id/browseImage"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:background="@color/transparent"
-        android:scaleType="center"/>
+        android:layout_height="match_parent"
+        android:layout_weight="2">
+        <ImageView
+            android:id="@+id/browseImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:scaleType="centerCrop" />
+
+        <com.pkmmte.view.CircularImageView
+            android:id="@+id/share"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="40dp"
+            android:src="@mipmap/ic_share_variant_white_48dp_"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="invisible"/>
+    </RelativeLayout>
+
 
     <HorizontalScrollView
         android:id="@+id/toolBox"

@@ -15,6 +15,8 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO , TAG, __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN , TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR , TAG, __VA_ARGS__)
+#define GET_ARRAY_LEN(array,len) {len = (sizeof(array) / sizeof(array[0]));}    //获取数组长度
+
 #define thresHold 100
 using namespace cv;
 using namespace std;
@@ -669,8 +671,45 @@ extern "C"{
     }
 
     //早安
-    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jlong object) {
-        Mat* mat = (Mat*) object;
+    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jclass object,jobject bitmap,jlongArray addrs,jlong originAddr) {
+        AndroidBitmapInfo info;
+        void *pixels = NULL;
+        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
+        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
+        CV_Assert( pixels );
+        const int h = info.height;
+        const int w = info.width;
 
+        const int deltaWidth = 20;                           //纵向切割矩形宽度(像素)
+        const int deltaHeight = 20;                          //横向切割矩形高度(像素)
+        const int xCount = 3;                               //横向切割块数
+        const int yCount = 3;                               //纵向切割块数
+
+        //求出9块区域的坐标
+        int p_width = (int)(w - (xCount-1) * deltaWidth)/xCount;          //每一块区域的宽度
+        int p_height = (int)(h - (yCount-1) * deltaHeight)/yCount;        //每一块区域的高度
+        vector<Rect> roi_vector(xCount*yCount,Rect());                  //一定要对vector进行初始化 不然就会报AM write failed: Broken pipe 错误
+        for(int i = 0;i < yCount; i++){
+            for(int j = 0;j < xCount;j++){
+                roi_vector[i*xCount + j] = Rect(j*(p_width+deltaWidth),i*(p_height+deltaHeight),p_width,p_height);
+            }
+        }
+        Mat origin(h,w,CV_8UC4,pixels);
+
+        jlong * addrs_jni = env->GetLongArrayElements(addrs, JNI_FALSE );
+        if (addrs_jni == NULL) {
+          exit(0);
+        }
+        for(int i = 0; i < xCount*yCount;i++){
+            origin(roi_vector[i]).copyTo(*(Mat*)(addrs_jni[i]));
+        }
+        Mat* originAddr_ = (Mat*) originAddr;
+        //画矩形
+        for(int i = 1; i < xCount; i++){
+            rectangle(*originAddr_,Point(i*p_width+(i-1)*deltaWidth,0),Point(i*(p_width+deltaWidth),h),Scalar(255,255,255,255),-1); //Scalar rgba顺序 第五个参数为-1 即填充颜色
+        }
+        for(int j = 1; j < yCount; j++){
+            rectangle(*originAddr_,Point(0,j*p_height+(j-1)*deltaHeight),Point(w,j*(p_height+deltaHeight)),Scalar(255,255,255,255),-1);
+        }
     }
 }

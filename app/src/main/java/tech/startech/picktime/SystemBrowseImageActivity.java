@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import com.apkfuns.logutils.LogUtils;
 import com.pkmmte.view.CircularImageView;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import java.lang.reflect.Array;
@@ -23,6 +24,8 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
     }
     private Bitmap originBitmap;
     private ImageView showImage;
+    //分享按钮
+    private CircularImageView share;
     //素描画
     private CircularImageView sketch;
     //九宫格
@@ -38,6 +41,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
         //LogUtils.v(CommonUtils.getPicDegree(path));
         originBitmap = BitmapFactory.decodeFile(path);
         showImage = (ImageView)findViewById(R.id.browseImage);
+        share = (CircularImageView)findViewById(R.id.share);
         sketch = (CircularImageView)findViewById(R.id.sketchImage);
         rasterize = (CircularImageView)findViewById(R.id.rasterizeImage);
         //检测图片旋转角度 如果被旋转了 就再旋转回来
@@ -89,10 +93,31 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
             showImage.setImageBitmap(goodMorningBitmap);*/
 
             //jni返回多个bitmap 不好实现 不得已用 java封装层的api在java层先定义好Mat 然后传入jni
-            Mat mats = new Mat();
+            final int block = 9;                //9宫格
 
-            ndk.goodMorning(mats.getNativeObjAddr());
+            Mat[] mats = new Mat[block];
+            //初始化对象数组
+            for(int i = 0;i < block; i++){
+                mats[i] = new Mat();
+            }
+            //存储n_mat地址
+            long[] addrs = new long[block];
+            for(int i = 0; i < block;i++){
+                addrs[i] = mats[i].getNativeObjAddr();
+            }
+            Mat originMat = new Mat();
+            Utils.bitmapToMat(originBitmap,originMat);
+            long origin_addr = originMat.getNativeObjAddr();
+            ndk.goodMorning(originBitmap,addrs,origin_addr);
 
+            Bitmap originBitmap_ = Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(originMat,originBitmap_); //用一个新的bitmap变量接收 不能用原来的bitmap变量
+            showImage.setImageBitmap(originBitmap_);
+            share.setVisibility(View.VISIBLE);
+            //showImage.setImageBitmap(goodMorning1Bitmap)
+            //Bitmap goodMorning1Bitmap = Bitmap.createBitmap(mats[0].cols(),mats[0].rows(), Bitmap.Config.ARGB_8888);;
+            //Utils.matToBitmap(mats[0],goodMorning1Bitmap);
+            //showImage.setImageBitmap(goodMorning1Bitmap);
         }
     }
 }
