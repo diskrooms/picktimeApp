@@ -713,3 +713,30 @@ extern "C"{
         }
     }
 }
+    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jclass object,jobject bitmap,jlong originAddr) {
+            /*AndroidBitmapInfo info;
+            void *pixels = NULL;
+            CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
+            CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
+            CV_Assert( pixels );
+            const int h = info.height;
+            const int w = info.width;
+
+            const int deltaWidth = 20;                           //纵向切割矩形宽度(像素)
+            const int deltaHeight = 20;                          //横向切割矩形高度(像素)
+            const int xCount = 3;                               //横向切割块数
+            const int yCount = 3;                               //纵向切割块数
+
+            //求出9块区域的坐标
+            int p_width = (int)(w - (xCount-1) * deltaWidth)/xCount;          //每一块区域的宽度
+            int p_height = (int)(h - (yCount-1) * deltaHeight)/yCount;        //每一块区域的高度
+
+            Mat* originAddr_ = (Mat*) originAddr;
+            //画矩形
+            for(int i = 1; i < xCount; i++){
+                rectangle(*originAddr_,Point(i*p_width+(i-1)*deltaWidth,0),Point(i*(p_width+deltaWidth),h),Scalar(255,255,255,255),-1); //Scalar rgba顺序 第五个参数为-1 即填充颜色
+            }
+            for(int j = 1; j < yCount; j++){
+                rectangle(*originAddr_,Point(0,j*p_height+(j-1)*deltaHeight),Point(w,j*(p_height+deltaHeight)),Scalar(255,255,255,255),-1);
+            }*/
+        }
