@@ -3,6 +3,7 @@ package tech.startech.picktime;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,8 +24,11 @@ import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+
+import tech.startech.picktime.ImageUtils.ImageUtils;
 
 public class SystemBrowseImageActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -45,7 +49,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
     // APP_ID 替换为你的应用从官方网站申请到的合法appId
     public static final String APP_ID = "wx083841cff060f353";
     //缩略图尺寸
-    private static final int THUMB_SIZE = 150;
+    private static final int THUMB_SIZE = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +131,8 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
                 Mat originMat = new Mat();
                 Utils.bitmapToMat(originBitmap, originMat);
                 long origin_addr = originMat.getNativeObjAddr();
-                ndk.goodMorning(originBitmap, origin_addr);
+                //ndk.goodMorning2(originBitmap, addrs, origin_addr);
+                ndk.goodMorning2(originBitmap, origin_addr);
 
                 final Bitmap originBitmap_ = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                 Utils.matToBitmap(originMat, originBitmap_); //用一个新的bitmap变量接收 不能用原来的bitmap变量
@@ -142,7 +147,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
                 share.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
 
-                        /*String path = "/sdcard/"+ Environment.getExternalStorageDirectory().getAbsolutePath() + "/123.jpg";
+                        String path = "/sdcard/"+ Environment.getExternalStorageDirectory().getAbsolutePath() + "/IMG_20170102_110146R.jpg";
                         LogUtils.v(path);
                         File file = new File(path);
                         try {
@@ -155,14 +160,23 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
                             Toast.makeText(SystemBrowseImageActivity.this, tip + " path = " + path, Toast.LENGTH_LONG).show();
                         }
                         WXImageObject imgObj = new WXImageObject();
-                        imgObj.setImagePath(path);*/
+                        imgObj.setImagePath(path);
 
-                        WXImageObject imgObj = new WXImageObject(originBitmap_);
+                        /*WXImageObject imgObj = new WXImageObject(originBitmap_);*/
                         WXMediaMessage msg = new WXMediaMessage();
                         msg.mediaObject = imgObj;
-                        //Bitmap bmp = BitmapFactory.decodeFile(path);
-                       Bitmap thumbBmp = Bitmap.createScaledBitmap(originBitmap_, THUMB_SIZE, THUMB_SIZE, true);
-                        //originBitmap_.recycle();
+                        Bitmap bmp = BitmapFactory.decodeFile(path);
+                        Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, THUMB_SIZE, THUMB_SIZE, true);
+                        ///保存图片start
+                        /*showImage.setImageBitmap(thumbBmp);
+                        try {
+                            ImageUtils.saveBitmap(thumbBmp, "123.jpg");
+                        } catch (IOException e){
+                            e.printStackTrace();
+                        }*/
+                        //保存图片end
+
+                        // originBitmap_.recycle();
                         msg.thumbData = WeChatUtil.bmpToByteArray(thumbBmp, true);
                         //LogUtils.v(msg.thumbData);
 
@@ -172,7 +186,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
                         //req.scene = mTargetScene;
                         req.scene = 0;
                         //LogUtils.v(req.message.thumbData.length);
-                        api.sendReq(req);
+                        LogUtils.v(api.sendReq(req));
                         //finish();
 
                     }

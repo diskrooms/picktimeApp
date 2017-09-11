@@ -53,10 +53,11 @@ public class WeChatUtil {
 
 		while (true) {
 			localCanvas.drawBitmap(bmp, new Rect(0, 0, i, j), new Rect(0, 0,i, j), null);
-			if (needRecycle)
-				bmp.recycle();
+			if (needRecycle) {
+				//bmp.recycle();
+			}
 			ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
-			localBitmap.compress(Bitmap.CompressFormat.JPEG, 50,
+			localBitmap.compress(Bitmap.CompressFormat.JPEG, 100,
 					localByteArrayOutputStream);
 			localBitmap.recycle();
 			byte[] arrayOfByte = localByteArrayOutputStream.toByteArray();

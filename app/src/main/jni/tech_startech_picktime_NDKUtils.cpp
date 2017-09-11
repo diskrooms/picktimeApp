@@ -712,9 +712,10 @@ extern "C"{
             rectangle(*originAddr_,Point(0,j*p_height+(j-1)*deltaHeight),Point(w,j*(p_height+deltaHeight)),Scalar(255,255,255,255),-1);
         }
     }
-}
-    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning(JNIEnv *env, jclass object,jobject bitmap,jlong originAddr) {
-            /*AndroidBitmapInfo info;
+
+    //早安重载函数
+    JNIEXPORT void JNICALL Java_tech_startech_picktime_NDKUtils_goodMorning2(JNIEnv *env, jclass object,jobject bitmap,jlong originAddr) {
+            AndroidBitmapInfo info;
             void *pixels = NULL;
             CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
             CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
@@ -738,5 +739,6 @@ extern "C"{
             }
             for(int j = 1; j < yCount; j++){
                 rectangle(*originAddr_,Point(0,j*p_height+(j-1)*deltaHeight),Point(w,j*(p_height+deltaHeight)),Scalar(255,255,255,255),-1);
-            }*/
+            }
         }
+}

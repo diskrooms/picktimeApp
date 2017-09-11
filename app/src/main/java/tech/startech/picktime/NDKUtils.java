@@ -20,6 +20,6 @@ public class NDKUtils {
     //public static native byte[] otsu(Bitmap bitmap);                    //Otsu算法
     public static native byte[] sketch3(Bitmap bitmap);                 //
     public static native int[] goodMorning_test(Bitmap bitmap);             //早! 测试
-    //public static native void goodMorning(Bitmap bitmap,long[] addrs,long origin_addr);      //早!
-    public static native void goodMorning(Bitmap bitmap,long origin_addr);      //早!
+    public static native void goodMorning(Bitmap bitmap,long[] addrs,long origin_addr);      //早!
+    public static native void goodMorning2(Bitmap bitmap,long origin_addr);      //早!重载函数
 }
