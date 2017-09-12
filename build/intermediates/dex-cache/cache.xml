@@ -3,66 +3,57 @@
 
     <item
         is-multidex="true"
-        jar="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="470dfef9e6c0b1ef10b4041ff231ecd798ec8d93">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run-bootstrap_959f485bf45f59765333ae3489eb1afc0b820468/classes.dex" />
-    </item>
-    <item
-        is-multidex="true"
-        jar="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jar="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
         jumboMode="true"
         optimize="true"
         revision="25.0.0"
         sha1="3be78ebc2706b2e1fe2f12d5726887a92d6c183b">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run_8e27b0d6e3dd5b596cba20fd9dba51defe9c4a63/classes.dex" />
+        <dex dex="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_fe7d6fdd4a354cf8f2807d3bdf6486c7976d0ef8\classes.dex" />
     </item>
     <item
         is-multidex="true"
-        jar="/root/.gradle/caches/modules-2/files-2.1/com.tencent.mm.opensdk/wechat-sdk-android-with-mta/1.1.6/3973d7856aaa0b1a329c2508d0252dfa27bc6780/wechat-sdk-android-with-mta-1.1.6.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="3973d7856aaa0b1a329c2508d0252dfa27bc6780">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/10/wechat-sdk-android-with-mta-1.1.6_7dc05e7ab44fe384e33815915e63467be3d19b75/classes.dex" />
-    </item>
-    <item
-        is-multidex="true"
-        jar="/root/AndroidStudioProjects/picktimeApp/app/libs/SocialSDK_WeChat_Simplify.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="08ae64e705bc856d5560e932d86684de5e9934aa">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/2/SocialSDK_WeChat_Simplify_5161e1f16c0fc4256d95a194d7c2c82fbbde7e29/classes.dex" />
-    </item>
-    <item
-        is-multidex="true"
-        jar="/root/AndroidStudioProjects/picktimeApp/app/libs/logutil-1.4.2.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="d77a6624ee3cbe1626a56a7bcdfc76ed3505e59e">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/2/logutil-1.4.2_1457c6df01ca06545876b655a99b949f248f2943/classes.dex" />
-    </item>
-    <item
-        is-multidex="true"
-        jar="/root/AndroidStudioProjects/picktimeApp/app/libs/glide-3.7.0.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="9e9eeaf9948ee4d6c3ab354e8dc14368f16994a4">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/2/glide-3.7.0_3651448d608de87b2f1ba08eb261bf087e217f9f/classes.dex" />
-    </item>
-    <item
-        is-multidex="true"
-        jar="/root/AndroidStudioProjects/picktimeApp/app/libs/SocialSDK_QQ_Simplify.jar"
+        jar="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\libs\SocialSDK_QQ_Simplify.jar"
         jumboMode="true"
         optimize="true"
         revision="25.0.0"
         sha1="6739b2dd368e2855c24528249dae9fbe14e7f09b">
-        <dex dex="/root/AndroidStudioProjects/picktimeApp/app/build/intermediates/transforms/dex/debug/folders/1000/2/SocialSDK_QQ_Simplify_b4672aa813224fe7c8d1d3503db668e71168d085/classes.dex" />
+        <dex dex="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\transforms\dex\debug\folders\1000\2\SocialSDK_QQ_Simplify_8112eec1d01c3f627057aa0978dae3b8ea3fb3fa\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\libs\logutil-1.4.2.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="d77a6624ee3cbe1626a56a7bcdfc76ed3505e59e">
+        <dex dex="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\transforms\dex\debug\folders\1000\2\logutil-1.4.2_5cf6bd8215b2b9a054455dad7b0893c706cff25c\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\libs\SocialSDK_WeChat_Simplify.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="08ae64e705bc856d5560e932d86684de5e9934aa">
+        <dex dex="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\transforms\dex\debug\folders\1000\2\SocialSDK_WeChat_Simplify_f423d5b016899dd8f6ff4b45d0d91965a56016ca\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\libs\glide-3.7.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="9e9eeaf9948ee4d6c3ab354e8dc14368f16994a4">
+        <dex dex="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\transforms\dex\debug\folders\1000\2\glide-3.7.0_9236ef0bfd2b77fa7ce32d5ec089ed57569f379b\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="c1f9dfeb07919e82046a1637655f5927144344a7">
+        <dex dex="C:\Users\jsb-hdp-0\AndroidStudioProjects\pickTime\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_874241b15ba8d258bd37a87303d9541c64d62932\classes.dex" />
     </item>
 
 </items>

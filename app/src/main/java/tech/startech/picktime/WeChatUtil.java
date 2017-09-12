@@ -25,8 +25,8 @@ public class WeChatUtil {
 	
 	public static byte[] bmpToByteArray(final Bitmap bmp, final boolean needRecycle) {
 		//图片太大造成 thumbData.length 超出32768 限制就会报错无法分享 所以修改图片压缩规则
-		/*ByteArrayOutputStream output = new ByteArrayOutputStream();
-		bmp.compress(CompressFormat.PNG, 50, output);
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		bmp.compress(CompressFormat.JPEG, 100, output);
 		if (needRecycle) {
 			bmp.recycle();
 		}
@@ -37,9 +37,9 @@ public class WeChatUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return result;*/
+		return result;
 
-		int i;
+		/*int i;
 		int j;
 		if (bmp.getHeight() > bmp.getWidth()) {
 			i = bmp.getWidth();
@@ -69,7 +69,7 @@ public class WeChatUtil {
 			}
 			i = bmp.getHeight();
 			j = bmp.getHeight();
-		}
+		}*/
 
 	}
 	

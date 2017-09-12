@@ -50,7 +50,8 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
     public static final String APP_ID = "wx083841cff060f353";
     //缩略图尺寸
     private static final int THUMB_SIZE = 100;
-
+    //图片路径
+    private String path = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +59,7 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
 
         setContentView(R.layout.activity_system_browse_image);
         Intent intent = getIntent();
-        String path = intent.getStringExtra("path");
+        path = intent.getStringExtra("path");
         //加载图片
         //LogUtils.v(CommonUtils.getPicDegree(path));
         originBitmap = BitmapFactory.decodeFile(path);
@@ -146,48 +147,65 @@ public class SystemBrowseImageActivity extends AppCompatActivity implements View
                 //分享到微信朋友圈 start
                 share.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
-
-                        String path = "/sdcard/"+ Environment.getExternalStorageDirectory().getAbsolutePath() + "/IMG_20170102_110146R.jpg";
-                        LogUtils.v(path);
-                        File file = new File(path);
+                        //1.从sdcard文件分享
+                            ///保存图片start
+                        showImage.setImageBitmap(originBitmap_);
                         try {
-                            LogUtils.v(CommonUtils.getFileSize(file) + "");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        if (!file.exists()) {
-                            String tip = SystemBrowseImageActivity.this.getString(R.string.send_img_file_not_exist);
-                            Toast.makeText(SystemBrowseImageActivity.this, tip + " path = " + path, Toast.LENGTH_LONG).show();
-                        }
-                        WXImageObject imgObj = new WXImageObject();
-                        imgObj.setImagePath(path);
-
-                        /*WXImageObject imgObj = new WXImageObject(originBitmap_);*/
-                        WXMediaMessage msg = new WXMediaMessage();
-                        msg.mediaObject = imgObj;
-                        Bitmap bmp = BitmapFactory.decodeFile(path);
-                        Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, THUMB_SIZE, THUMB_SIZE, true);
-                        ///保存图片start
-                        /*showImage.setImageBitmap(thumbBmp);
-                        try {
-                            ImageUtils.saveBitmap(thumbBmp, "123.jpg");
+                            String basename = path.substring(path.lastIndexOf("/")+1);
+                            String dirname = path.substring(0,path.lastIndexOf("/")+1);
+                            String filename = basename.substring(0,basename.lastIndexOf("."));
+                            String extname = basename.substring(basename.lastIndexOf("."));
+                            //LogUtils.v(filename);
+                            //LogUtils.v(extname);
+                            String newPath = dirname+"_picktime_"+filename+".jpg";
+                            if(ImageUtils.saveBitmap(originBitmap_, newPath,100)){
+                                originBitmap_.recycle();
+                                File newFile = new File(newPath);
+                                try {
+                                    //LogUtils.v(CommonUtils.getFileSize(file) + "");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                if (!newFile.exists()) {
+                                    String tip = SystemBrowseImageActivity.this.getString(R.string.send_img_file_not_exist);
+                                    Toast.makeText(SystemBrowseImageActivity.this, tip + " path = " + path, Toast.LENGTH_LONG).show();
+                                }
+                                WXImageObject imgObj = new WXImageObject();
+                                imgObj.setImagePath(newPath);
+                                WXMediaMessage msg = new WXMediaMessage();
+                                msg.mediaObject = imgObj;
+                                Bitmap bmp = BitmapFactory.decodeFile(newPath);
+                                Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, THUMB_SIZE, THUMB_SIZE, true);
+                                msg.thumbData = WeChatUtil.bmpToByteArray(thumbBmp, true);
+                                SendMessageToWX.Req req = new SendMessageToWX.Req();
+                                req.transaction = buildTransaction("img");
+                                req.message = msg;
+                                req.scene = 1;  //0 微信好友 1朋友圈 2收藏
+                                LogUtils.v(api.sendReq(req));
+                            } else {
+                                LogUtils.v("保存图片失败---保存路径:"+newPath);
+                            }
                         } catch (IOException e){
                             e.printStackTrace();
-                        }*/
-                        //保存图片end
+                        }
 
+
+                        //2.用Bitmap资源分享
+                        /*WXImageObject imgObj = new WXImageObject(originBitmap_);
+                        WXMediaMessage msg = new WXMediaMessage();
+                        msg.mediaObject = imgObj;
+                        Bitmap thumbBmp = Bitmap.createScaledBitmap(originBitmap_, THUMB_SIZE, THUMB_SIZE, true);
                         // originBitmap_.recycle();
                         msg.thumbData = WeChatUtil.bmpToByteArray(thumbBmp, true);
-                        //LogUtils.v(msg.thumbData);
-
+                        //LogUtils.v(msg.thumbData)
                         SendMessageToWX.Req req = new SendMessageToWX.Req();
-                         req.transaction = buildTransaction("img");
+                        req.transaction = buildTransaction("img");
                         req.message = msg;
                         //req.scene = mTargetScene;
                         req.scene = 0;
                         //LogUtils.v(req.message.thumbData.length);
                         LogUtils.v(api.sendReq(req));
-                        //finish();
+                        //finish();*/
 
                     }
 

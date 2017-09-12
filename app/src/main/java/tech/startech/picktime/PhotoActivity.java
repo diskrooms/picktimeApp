@@ -629,9 +629,11 @@ public class PhotoActivity extends BaseActivity implements View.OnClickListener{
     //指派点击事件
     public void onClick(View view){
         switch (view.getId()){
+            //拍照
             case R.id.photo:
                 photo();
                 break;
+            //打开相册
             case R.id.openGallery:
                 //gridView.setAdapter(customGridViewAdapter);
                 //启动自定义相册
